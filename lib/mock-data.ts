@@ -83,3 +83,206 @@ export const mockRiskAssessment = [
   { label: "시정조치 완료율", value: 93 },
 ];
 
+// 작업일보 데이터
+export const mockWorkLog = {
+  date: "2024-01-20",
+  site: "인천1구역 주택재개발",
+  siteCode: "22031",
+  tasks: [
+    { id: 1, team: "전기 1팀", location: "102동 2코어", task: "동력간선 케이블 포설 작업", worker: "박성구" },
+    { id: 2, team: "전기 2팀", location: "103동 3층", task: "조명 배선 작업", worker: "김철수" },
+    { id: 3, team: "전기 3팀", location: "104동 지하1층", task: "전기실 입선 작업", worker: "이영희" },
+  ],
+  education: {
+    place: "현장 회의실",
+    time: "오전 08:00 ~ 08:30",
+    attendees: 32,
+    content: "오늘 작업 구간의 낙하·추락 위험요인과 감전 위험에 대해 교육 및 지시.",
+  },
+};
+
+// 작업지시서 데이터 (작업일보 기반 생성)
+export const mockWorkOrders: Array<{
+  id: number;
+  date: string;
+  workerId: number;
+  workerName: string;
+  team: string;
+  location: string;
+  task: string;
+  risks: string[];
+  measures: string[];
+  status: "pending" | "agreed" | "completed";
+  agreedAt: string | null;
+  signature: string | null;
+}> = [
+  {
+    id: 1,
+    date: "2024-01-20",
+    workerId: 1,
+    workerName: "박성구",
+    team: "전기 1팀",
+    location: "102동 2코어",
+    task: "동력간선 케이블 포설 작업",
+    risks: [
+      "중량물 운반 시 전도 위험",
+      "케이블 절단 시 손베임 주의",
+      "개구부 추락 주의 (안전고리 체결)",
+    ],
+    measures: [
+      "릴·드럼 운반 시 2인 1조 작업, 손가락 끼임주의 구호 TBM 실시",
+      "케이블 커터 전용 공구 사용, 절단 방향 통제 및 장갑 착용",
+      "개구부 덮개 설치 및 안전난간 설치, 안전대 걸이 확보 후 작업",
+    ],
+    status: "pending",
+    agreedAt: null,
+    signature: null,
+  },
+  {
+    id: 2,
+    date: "2024-01-20",
+    workerId: 2,
+    workerName: "김철수",
+    team: "전기 2팀",
+    location: "103동 3층",
+    task: "조명 배선 작업",
+    risks: [
+      "고소작업 시 추락 위험",
+      "전기 감전 위험",
+    ],
+    measures: [
+      "안전대 착용 필수, 안전고리 체결 확인",
+      "작업 전 전원 차단 확인, 절연장갑 착용",
+    ],
+    status: "pending",
+    agreedAt: null,
+    signature: null,
+  },
+];
+
+// TBM 일지 데이터
+export const mockTBMLog = {
+  date: "2024-01-20",
+  site: "인천1구역 주택재개발",
+  workOrders: [] as typeof mockWorkOrders,
+  focusWork: {
+    task: "동력간선 케이블 포설 작업",
+    risks: ["중량물 운반 시 전도 위험", "개구부 추락 주의"],
+    measures: ["2인 1조 작업", "안전대 걸이 확보"],
+  },
+  signatures: [] as Array<{ workerName: string; signature: string; timestamp: string }>,
+  generated: false,
+};
+
+// 무재해일지 데이터
+export const mockSafeLog = {
+  date: "2024-01-20",
+  site: "인천1구역 주택재개발",
+  workers: [] as Array<{
+    workerId: number;
+    workerName: string;
+    workOrderId: number;
+    task: string;
+    location: string;
+    endTime: string;
+    gpsLocation: { lat: number; lng: number };
+    signature: string;
+    hasIssue: boolean;
+    issueNote?: string;
+  }>,
+  generated: false,
+};
+
+// MSDS 데이터
+export const mockMSDS = [
+  {
+    id: 1,
+    name: "락카",
+    chemicalName: "아세톤",
+    hazards: ["인화성", "휘발성"],
+    handling: "통풍이 잘 되는 곳에서 사용, 화기 근처 금지",
+    firstAid: "눈에 들어갔을 경우 즉시 세척",
+    storage: "서늘하고 건조한 곳에 보관",
+  },
+  {
+    id: 2,
+    name: "접착제",
+    chemicalName: "에폭시 수지",
+    hazards: ["피부 자극", "알레르기 반응"],
+    handling: "장갑 착용 필수, 피부 접촉 시 즉시 세척",
+    firstAid: "피부 접촉 시 비누와 물로 세척",
+    storage: "직사광선 피하고 밀폐 보관",
+  },
+  {
+    id: 3,
+    name: "용제",
+    chemicalName: "톨루엔",
+    hazards: ["휘발성", "중추신경계 영향"],
+    handling: "호흡기 보호구 착용, 통풍 필수",
+    firstAid: "호흡 곤란 시 신선한 공기로 이동",
+    storage: "밀폐 용기에 보관, 화기 근처 금지",
+  },
+];
+
+// 공지사항 데이터
+export const mockNotices = [
+  {
+    id: 1,
+    title: "2024년 1월 안전보건 교육 일정 안내",
+    content: "2024년 1월 안전보건 교육이 1월 25일 오전 9시에 진행됩니다. 모든 근로자는 필수 참석 바랍니다.",
+    author: "안전보건팀",
+    date: "2024-01-15",
+    category: "교육",
+    important: true,
+  },
+  {
+    id: 2,
+    title: "겨울철 안전 수칙 준수 안내",
+    content: "겨울철 한파 대비 안전 수칙을 준수해 주시기 바랍니다. 특히 미끄럼 방지 조치와 보온 장비 착용을 철저히 해주세요.",
+    author: "안전보건팀",
+    date: "2024-01-10",
+    category: "안전",
+    important: true,
+  },
+  {
+    id: 3,
+    title: "신규 근로자 등록 절차 안내",
+    content: "신규 근로자 등록 시 기초안전보건교육 이수증과 자격증을 제출해 주시기 바랍니다.",
+    author: "인사팀",
+    date: "2024-01-05",
+    category: "인사",
+    important: false,
+  },
+];
+
+// 안전 신문고 데이터
+export const mockSafetyReports = [
+  {
+    id: 1,
+    title: "안전난간 보수 필요",
+    content: "102동 3층 안전난간이 느슨해져 있어 보수 작업이 필요합니다.",
+    reporter: "박성구",
+    date: "2024-01-15",
+    status: "접수",
+    response: null,
+  },
+  {
+    id: 2,
+    title: "안전모 착용 미준수",
+    content: "일부 근로자가 안전모를 제대로 착용하지 않고 있습니다.",
+    reporter: "김철수",
+    date: "2024-01-14",
+    status: "조치중",
+    response: "안전모 착용 교육 실시 예정",
+  },
+  {
+    id: 3,
+    title: "작업장 조명 개선",
+    content: "지하 작업장 조명이 어두워 작업 시 위험할 수 있습니다.",
+    reporter: "이영희",
+    date: "2024-01-13",
+    status: "조치완료",
+    response: "추가 조명 설치 완료",
+  },
+];
+

@@ -47,7 +47,7 @@ export default function LandingPage() {
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Button size="lg" className="bg-safety-navy hover:bg-safety-navy-light">
-              솔루션 도입 문의
+              수의계약 진행
             </Button>
             <Link href="/dashboard">
               <Button size="lg" variant="outline" className="border-industrial-yellow text-industrial-yellow hover:bg-industrial-yellow hover:text-white">
@@ -109,6 +109,83 @@ export default function LandingPage() {
               </CardDescription>
             </CardHeader>
           </Card>
+        </div>
+      </section>
+
+      {/* PoC Tier Section */}
+      <section className="container mx-auto px-4 py-12 md:py-16">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-safety-navy text-center mb-4">
+            예상 PoC 규모별 우선권
+          </h2>
+          <p className="text-center text-gray-600 mb-8">
+            생산 일정에 따른 순차적 도입 및 우선 할당권 제공
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card className="border-2 border-safety-navy">
+              <CardHeader>
+                <div className="flex items-center justify-between mb-2">
+                  <CardTitle className="text-lg">1억 원 이상</CardTitle>
+                  <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-semibold">VVIP</span>
+                </div>
+                <CardDescription className="text-sm">
+                  최우선 기술 지원 및 <strong>초기 생산 물량 우선 할당권</strong>
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="border-2 border-blue-300">
+              <CardHeader>
+                <div className="flex items-center justify-between mb-2">
+                  <CardTitle className="text-lg">5,000만 원 이상</CardTitle>
+                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-semibold">우선</span>
+                </div>
+                <CardDescription className="text-sm">
+                  우선순위 파트너십 및 기술 실증 협의 대상
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="border-2 border-green-300">
+              <CardHeader>
+                <div className="flex items-center justify-between mb-2">
+                  <CardTitle className="text-lg">3,000만 원 이상</CardTitle>
+                  <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-semibold">순차</span>
+                </div>
+                <CardDescription className="text-sm">
+                  생산 일정에 따른 <strong>순차적 도입 권한</strong>
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="border-2 border-orange-300 md:col-span-2 lg:col-span-1">
+              <CardHeader>
+                <div className="flex items-center justify-between mb-2">
+                  <CardTitle className="text-lg">1,500만 원</CardTitle>
+                  <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-semibold">협상</span>
+                </div>
+                <CardDescription className="text-sm">
+                  <strong>공공기관 수의계약 가이드라인</strong> 기반 협상
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="border-2 border-gray-300 md:col-span-2 lg:col-span-2">
+              <CardHeader>
+                <div className="flex items-center justify-between mb-2">
+                  <CardTitle className="text-lg">기타/협의</CardTitle>
+                  <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full font-semibold">유연</span>
+                </div>
+                <CardDescription className="text-sm">
+                  별도 PoC 범위 논의 및 맞춤형 협의 가능
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+          <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-gray-700">
+            <strong>안내:</strong> 예비창업 단계로, 실제 제품 공급 시점에 대한 법적 책임을 피하고, 
+            대신 <strong>&ldquo;가장 먼저 받을 수 있는 권리&rdquo;</strong>를 판매하는 형태로 포지셔닝합니다.
+          </div>
         </div>
       </section>
 
