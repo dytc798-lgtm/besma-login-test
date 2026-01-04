@@ -338,3 +338,179 @@ export const mockSafetyReports: Array<{
   },
 ];
 
+// 교육 계획 타입
+export type EducationPlan = {
+  id: number;
+  date: string; // YYYY-MM-DD
+  type: "본사법정안전교육" | "산업안전보건교육" | "특별안전보건교육" | "안전보건관리책임자교육" | "관리감독자교육" | "기타추가안전보건교육";
+  site: string; // 현장명
+  status: "계획" | "확정" | "불가"; // 본사 계획 → 현장 확인 → 확정/불가
+  siteManagerComment: string | null; // 현장소장 코멘트 (불가능한 경우)
+  alternativeDate: string | null; // 대안 날짜
+  isHeadquartersVisit: boolean; // 본사 방문 교육 여부
+};
+
+// 점검 계획 타입
+export type InspectionPlan = {
+  id: number;
+  date: string; // YYYY-MM-DD
+  type: "본사안전점검" | "현장자체점검" | "특별점검";
+  site: string; // 현장명
+  status: "계획" | "확정" | "불가";
+  siteManagerComment: string | null;
+  alternativeDate: string | null;
+};
+
+// 교육 계획 데이터 (월에 10건 정도)
+export const mockEducationPlans: EducationPlan[] = [
+  {
+    id: 1,
+    date: "2024-01-05",
+    type: "본사법정안전교육",
+    site: "인천1구역",
+    status: "확정",
+    siteManagerComment: null,
+    alternativeDate: null,
+    isHeadquartersVisit: true,
+  },
+  {
+    id: 2,
+    date: "2024-01-08",
+    type: "산업안전보건교육",
+    site: "서울2구역",
+    status: "확정",
+    siteManagerComment: null,
+    alternativeDate: null,
+    isHeadquartersVisit: false,
+  },
+  {
+    id: 3,
+    date: "2024-01-12",
+    type: "특별안전보건교육",
+    site: "부산3구역",
+    status: "확정",
+    siteManagerComment: null,
+    alternativeDate: null,
+    isHeadquartersVisit: true,
+  },
+  {
+    id: 4,
+    date: "2024-01-15",
+    type: "안전보건관리책임자교육",
+    site: "인천1구역",
+    status: "확정",
+    siteManagerComment: null,
+    alternativeDate: null,
+    isHeadquartersVisit: true,
+  },
+  {
+    id: 5,
+    date: "2024-01-18",
+    type: "관리감독자교육",
+    site: "서울2구역",
+    status: "확정",
+    siteManagerComment: null,
+    alternativeDate: null,
+    isHeadquartersVisit: false,
+  },
+  {
+    id: 6,
+    date: "2024-01-22",
+    type: "본사법정안전교육",
+    site: "부산3구역",
+    status: "불가",
+    siteManagerComment: "이 날은 고객사 회의가 하루종일 있어서 힘듭니다. 3일 뒤는 어떻습니까?",
+    alternativeDate: "2024-01-25",
+    isHeadquartersVisit: true,
+  },
+  {
+    id: 7,
+    date: "2024-01-25",
+    type: "기타추가안전보건교육",
+    site: "인천1구역",
+    status: "계획",
+    siteManagerComment: null,
+    alternativeDate: null,
+    isHeadquartersVisit: false,
+  },
+  {
+    id: 8,
+    date: "2024-01-28",
+    type: "산업안전보건교육",
+    site: "서울2구역",
+    status: "확정",
+    siteManagerComment: null,
+    alternativeDate: null,
+    isHeadquartersVisit: true,
+  },
+  {
+    id: 9,
+    date: "2024-01-30",
+    type: "특별안전보건교육",
+    site: "부산3구역",
+    status: "계획",
+    siteManagerComment: null,
+    alternativeDate: null,
+    isHeadquartersVisit: false,
+  },
+  {
+    id: 10,
+    date: "2024-01-31",
+    type: "관리감독자교육",
+    site: "인천1구역",
+    status: "확정",
+    siteManagerComment: null,
+    alternativeDate: null,
+    isHeadquartersVisit: true,
+  },
+];
+
+// 점검 계획 데이터
+export const mockInspectionPlans: InspectionPlan[] = [
+  {
+    id: 1,
+    date: "2024-01-10",
+    type: "본사안전점검",
+    site: "인천1구역",
+    status: "확정",
+    siteManagerComment: null,
+    alternativeDate: null,
+  },
+  {
+    id: 2,
+    date: "2024-01-15",
+    type: "현장자체점검",
+    site: "서울2구역",
+    status: "확정",
+    siteManagerComment: null,
+    alternativeDate: null,
+  },
+  {
+    id: 3,
+    date: "2024-01-20",
+    type: "본사안전점검",
+    site: "부산3구역",
+    status: "확정",
+    siteManagerComment: null,
+    alternativeDate: null,
+  },
+  {
+    id: 4,
+    date: "2024-01-25",
+    type: "특별점검",
+    site: "인천1구역",
+    status: "계획",
+    siteManagerComment: null,
+    alternativeDate: null,
+  },
+  {
+    id: 5,
+    date: "2024-01-28",
+    type: "현장자체점검",
+    site: "서울2구역",
+    status: "확정",
+    siteManagerComment: null,
+    alternativeDate: null,
+  },
+];
+

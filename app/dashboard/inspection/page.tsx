@@ -3,18 +3,18 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { mockEducationPlans, mockInspectionPlans } from "@/lib/mock-data";
-import type { EducationPlan } from "@/lib/mock-data";
-import { GraduationCap, Calendar, CheckCircle2, XCircle, Clock, Building2, AlertCircle } from "lucide-react";
+import { mockInspectionPlans, mockEducationPlans } from "@/lib/mock-data";
+import type { InspectionPlan } from "@/lib/mock-data";
+import { Calendar, CheckCircle2, XCircle, Clock, Building2, AlertCircle, Search } from "lucide-react";
 
-export default function EducationPage() {
+export default function InspectionPage() {
   const [viewMode, setViewMode] = useState<"yearly" | "monthly">("monthly");
   const [currentMonth, setCurrentMonth] = useState(new Date(2024, 0, 1)); // 2024년 1월
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<EducationPlan | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<InspectionPlan | null>(null);
 
-  // 현재 월의 교육 계획 필터링
-  const currentMonthPlans = mockEducationPlans.filter((plan) => {
+  // 현재 월의 점검 계획 필터링
+  const currentMonthPlans = mockInspectionPlans.filter((plan) => {
     const planDate = new Date(plan.date);
     return (
       planDate.getFullYear() === currentMonth.getFullYear() &&
@@ -22,8 +22,8 @@ export default function EducationPage() {
     );
   });
 
-  // 현재 월의 점검 계획 필터링
-  const currentMonthInspections = mockInspectionPlans.filter((plan) => {
+  // 현재 월의 교육 계획도 함께 표시
+  const currentMonthEducations = mockEducationPlans.filter((plan) => {
     const planDate = new Date(plan.date);
     return (
       planDate.getFullYear() === currentMonth.getFullYear() &&
@@ -32,22 +32,22 @@ export default function EducationPage() {
   });
 
   // 날짜별로 그룹화
-  const plansByDate: { [key: string]: { educations: EducationPlan[]; inspections: typeof mockInspectionPlans } } = {};
+  const plansByDate: { [key: string]: { inspections: InspectionPlan[]; educations: typeof mockEducationPlans } } = {};
   
   currentMonthPlans.forEach((item) => {
     const date = item.date;
     if (!plansByDate[date]) {
-      plansByDate[date] = { educations: [], inspections: [] };
-    }
-    plansByDate[date].educations.push(item);
-  });
-
-  currentMonthInspections.forEach((item) => {
-    const date = item.date;
-    if (!plansByDate[date]) {
-      plansByDate[date] = { educations: [], inspections: [] };
+      plansByDate[date] = { inspections: [], educations: [] };
     }
     plansByDate[date].inspections.push(item);
+  });
+
+  currentMonthEducations.forEach((item) => {
+    const date = item.date;
+    if (!plansByDate[date]) {
+      plansByDate[date] = { inspections: [], educations: [] };
+    }
+    plansByDate[date].educations.push(item);
   });
 
   // 캘린더 생성
@@ -60,11 +60,9 @@ export default function EducationPage() {
     const startingDayOfWeek = firstDay.getDay();
 
     const days = [];
-    // 빈 칸 추가
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null);
     }
-    // 날짜 추가
     for (let i = 1; i <= daysInMonth; i++) {
       days.push(i);
     }
@@ -98,20 +96,14 @@ export default function EducationPage() {
     return "normal";
   };
 
-  const getEducationTypeColor = (type: string) => {
+  const getInspectionTypeColor = (type: string) => {
     switch (type) {
-      case "본사법정안전교육":
+      case "본사안전점검":
         return "bg-blue-100 text-blue-700 border-blue-300";
-      case "산업안전보건교육":
+      case "현장자체점검":
         return "bg-green-100 text-green-700 border-green-300";
-      case "특별안전보건교육":
+      case "특별점검":
         return "bg-orange-100 text-orange-700 border-orange-300";
-      case "안전보건관리책임자교육":
-        return "bg-purple-100 text-purple-700 border-purple-300";
-      case "관리감독자교육":
-        return "bg-pink-100 text-pink-700 border-pink-300";
-      case "기타추가안전보건교육":
-        return "bg-gray-100 text-gray-700 border-gray-300";
       default:
         return "bg-gray-100 text-gray-700 border-gray-300";
     }
@@ -120,8 +112,8 @@ export default function EducationPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-safety-navy mb-2">안전 교육</h1>
-        <p className="text-gray-600">연간교육계획 및 월별 교육계획 관리</p>
+        <h1 className="text-2xl font-bold text-safety-navy mb-2">점검계획</h1>
+        <p className="text-gray-600">연간점검계획 및 월별 점검계획 관리</p>
       </div>
 
       {/* 뷰 모드 선택 */}
@@ -176,7 +168,7 @@ export default function EducationPage() {
           {/* 캘린더 */}
           <Card>
             <CardHeader>
-              <CardTitle>교육 및 점검 계획 캘린더</CardTitle>
+              <CardTitle>점검 및 교육 계획 캘린더</CardTitle>
               <CardDescription>날짜를 클릭하여 상세 정보를 확인하세요</CardDescription>
             </CardHeader>
             <CardContent>
@@ -215,22 +207,22 @@ export default function EducationPage() {
                       <div className="text-xs font-medium mb-1">{day}</div>
                       {dayPlans && (
                         <div className="space-y-0.5">
-                          {dayPlans.educations.slice(0, 2).map((plan) => (
+                          {dayPlans.inspections.slice(0, 2).map((plan) => (
                             <div
                               key={plan.id}
-                              className={`text-[8px] px-1 py-0.5 rounded border ${getEducationTypeColor(plan.type)}`}
+                              className={`text-[8px] px-1 py-0.5 rounded border ${getInspectionTypeColor(plan.type)}`}
                               title={plan.type}
                             >
                               {plan.type.substring(0, 4)}
                             </div>
                           ))}
-                          {dayPlans.inspections.slice(0, 1).map((inspection) => (
+                          {dayPlans.educations.slice(0, 1).map((education) => (
                             <div
-                              key={inspection.id}
-                              className="text-[8px] px-1 py-0.5 rounded bg-yellow-100 text-yellow-700 border border-yellow-300"
-                              title={inspection.type}
+                              key={education.id}
+                              className="text-[8px] px-1 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-300"
+                              title={education.type}
                             >
-                              점검
+                              교육
                             </div>
                           ))}
                         </div>
@@ -257,20 +249,15 @@ export default function EducationPage() {
                 {selectedPlan ? (
                   <div className="space-y-4">
                     <div>
-                      <div className="font-semibold mb-2">교육 계획</div>
-                      <div className={`p-3 rounded-lg border ${getEducationTypeColor(selectedPlan.type)}`}>
+                      <div className="font-semibold mb-2">점검 계획</div>
+                      <div className={`p-3 rounded-lg border ${getInspectionTypeColor(selectedPlan.type)}`}>
                         <div className="flex items-center gap-2 mb-2">
-                          <GraduationCap className="w-5 h-5" />
+                          <Search className="w-5 h-5" />
                           <div className="font-bold">{selectedPlan.type}</div>
                         </div>
                         <div className="text-sm mb-1">
                           <Building2 className="w-4 h-4 inline mr-1" />
                           현장: {selectedPlan.site}
-                        </div>
-                        <div className="text-sm mb-1">
-                          {selectedPlan.isHeadquartersVisit && (
-                            <span className="text-blue-600 font-semibold">본사 방문 교육</span>
-                          )}
                         </div>
                         <div className="flex items-center gap-2 mt-2">
                           {selectedPlan.status === "확정" && (
@@ -318,23 +305,23 @@ export default function EducationPage() {
                   </div>
                 ) : (
                   <div className="text-center text-gray-500 py-4">
-                    해당 날짜에 교육 계획이 없습니다.
+                    해당 날짜에 점검 계획이 없습니다.
                   </div>
                 )}
 
-                {/* 해당 날짜의 점검 계획도 표시 */}
-                {plansByDate[selectedDate]?.inspections.length > 0 && (
+                {/* 해당 날짜의 교육 계획도 표시 */}
+                {plansByDate[selectedDate]?.educations.length > 0 && (
                   <div className="mt-4">
-                    <div className="font-semibold mb-2">점검 계획</div>
-                    {plansByDate[selectedDate].inspections.map((inspection) => (
-                      <div key={inspection.id} className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg mb-2">
-                        <div className="font-medium">{inspection.type}</div>
-                        <div className="text-sm text-gray-600">현장: {inspection.site}</div>
+                    <div className="font-semibold mb-2">교육 계획</div>
+                    {plansByDate[selectedDate].educations.map((education) => (
+                      <div key={education.id} className="p-3 bg-purple-50 border border-purple-200 rounded-lg mb-2">
+                        <div className="font-medium">{education.type}</div>
+                        <div className="text-sm text-gray-600">현장: {education.site}</div>
                         <div className="text-sm">
-                          {inspection.status === "확정" && (
+                          {education.status === "확정" && (
                             <span className="text-green-600">확정됨</span>
                           )}
-                          {inspection.status === "계획" && (
+                          {education.status === "계획" && (
                             <span className="text-yellow-600">확정 대기</span>
                           )}
                         </div>
@@ -351,12 +338,12 @@ export default function EducationPage() {
       {viewMode === "yearly" && (
         <Card>
           <CardHeader>
-            <CardTitle>연간 교육 계획</CardTitle>
-            <CardDescription>2024년 전체 교육 계획</CardDescription>
+            <CardTitle>연간 점검 계획</CardTitle>
+            <CardDescription>2024년 전체 점검 계획</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {mockEducationPlans.map((plan) => (
+              {mockInspectionPlans.map((plan) => (
                 <div key={plan.id} className="p-4 border rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
@@ -392,3 +379,4 @@ export default function EducationPage() {
     </div>
   );
 }
+

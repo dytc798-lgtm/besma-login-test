@@ -31,6 +31,7 @@ const menuItems = [
   { id: "notice", label: "공지사항", icon: Bell, path: "/dashboard/notice" },
   { id: "feedback", label: "안전 신문고", icon: MessageSquare, path: "/dashboard/feedback" },
   { id: "education", label: "안전 교육", icon: GraduationCap, path: "/dashboard/education" },
+  { id: "inspection", label: "점검계획", icon: CheckCircle2, path: "/dashboard/inspection" },
   { id: "health", label: "보건 관리", icon: Heart, path: "/dashboard/health" },
   { id: "worker-app", label: "근로자 앱", icon: Smartphone, path: "/dashboard/worker-app" },
   { id: "site-manager", label: "현장관리자", icon: Building2, path: "/dashboard/site-manager" },
