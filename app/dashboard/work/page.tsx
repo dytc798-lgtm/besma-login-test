@@ -131,6 +131,26 @@ export default function WorkManagementPage() {
         </CardContent>
       </Card>
 
+      {/* 작업 진행 현황 히스토리 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>작업 진행 현황</CardTitle>
+          <CardDescription>이전 완료된 작업에 대한 히스토리</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <div className="p-3 border rounded-lg bg-gray-50">
+              <div className="font-semibold text-sm">2024-01-19 - 조명 배선 작업</div>
+              <div className="text-xs text-gray-600">김철수 · 완료</div>
+            </div>
+            <div className="p-3 border rounded-lg bg-gray-50">
+              <div className="font-semibold text-sm">2024-01-18 - 전기실 입선 작업</div>
+              <div className="text-xs text-gray-600">이영희 · 완료</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* 개인별 작업지시서 목록 */}
       <Card>
         <CardHeader>

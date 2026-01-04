@@ -14,6 +14,11 @@ import {
   Bell,
   CheckCircle2,
   Shield,
+  Smartphone,
+  Building2,
+  Users,
+  AlertCircle,
+  Languages,
 } from "lucide-react";
 
 const menuItems = [
@@ -27,6 +32,11 @@ const menuItems = [
   { id: "feedback", label: "안전 신문고", icon: MessageSquare, path: "/dashboard/feedback" },
   { id: "education", label: "안전 교육", icon: GraduationCap, path: "/dashboard/education" },
   { id: "health", label: "보건 관리", icon: Heart, path: "/dashboard/health" },
+  { id: "worker-app", label: "근로자 앱", icon: Smartphone, path: "/dashboard/worker-app" },
+  { id: "site-manager", label: "현장관리자", icon: Building2, path: "/dashboard/site-manager" },
+  { id: "headquarters", label: "본사 관리", icon: Users, path: "/dashboard/headquarters" },
+  { id: "sos", label: "SOS 긴급호출", icon: AlertCircle, path: "/dashboard/sos" },
+  { id: "translation", label: "다국어 번역", icon: Languages, path: "/dashboard/translation" },
   { id: "settings", label: "설정", icon: Settings, path: "/dashboard/settings" },
 ];
 
