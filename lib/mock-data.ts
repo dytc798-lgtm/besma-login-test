@@ -255,34 +255,86 @@ export const mockNotices = [
   },
 ];
 
-// 안전 신문고 데이터
-export const mockSafetyReports = [
+// 안전 신문고 데이터 (표 형태로 관리)
+export const mockSafetyReports: Array<{
+  id: number;
+  type: "위험요인신고" | "작업중지권";
+  reporter: string;
+  reporterTeam: string;
+  datetime: string;
+  location: string;
+  riskFactor: string;
+  countermeasure: string;
+  status: "접수" | "조치중" | "조치완료";
+  manager: string | null;
+  response: string | null;
+  appropriatenessScore: number | null; // 적절성 점수 (0-10)
+  noveltyScore: number | null; // 참신성 점수 (0-10)
+  totalScore: number | null; // 총점 (포상용)
+}> = [
   {
     id: 1,
-    title: "안전난간 보수 필요",
-    content: "102동 3층 안전난간이 느슨해져 있어 보수 작업이 필요합니다.",
+    type: "위험요인신고",
     reporter: "박성구",
-    date: "2024-01-15",
-    status: "접수",
-    response: null,
+    reporterTeam: "전기 1팀",
+    datetime: "2024-01-20 14:30",
+    location: "102동 3층",
+    riskFactor: "안전난간이 느슨해져 있어 추락 위험",
+    countermeasure: "안전난간 보수 작업 필요",
+    status: "조치완료",
+    manager: "김철수",
+    response: "안전난간 보수 완료",
+    appropriatenessScore: 9,
+    noveltyScore: 7,
+    totalScore: 16,
   },
   {
     id: 2,
-    title: "안전모 착용 미준수",
-    content: "일부 근로자가 안전모를 제대로 착용하지 않고 있습니다.",
-    reporter: "김철수",
-    date: "2024-01-14",
+    type: "작업중지권",
+    reporter: "김민수",
+    reporterTeam: "전기 2팀",
+    datetime: "2024-01-20 13:15",
+    location: "103동 지하1층",
+    riskFactor: "작업장 조명 부족으로 작업 위험",
+    countermeasure: "작업 중지 및 조명 개선 후 재개",
     status: "조치중",
-    response: "안전모 착용 교육 실시 예정",
+    manager: "이영희",
+    response: "추가 조명 설치 진행 중",
+    appropriatenessScore: 8,
+    noveltyScore: 6,
+    totalScore: 14,
   },
   {
     id: 3,
-    title: "작업장 조명 개선",
-    content: "지하 작업장 조명이 어두워 작업 시 위험할 수 있습니다.",
+    type: "위험요인신고",
     reporter: "이영희",
-    date: "2024-01-13",
+    reporterTeam: "전기 3팀",
+    datetime: "2024-01-20 11:45",
+    location: "104동 5층",
+    riskFactor: "안전모 착용 미준수 근로자 발견",
+    countermeasure: "안전모 착용 교육 실시",
+    status: "접수",
+    manager: null,
+    response: null,
+    appropriatenessScore: null,
+    noveltyScore: null,
+    totalScore: null,
+  },
+  {
+    id: 4,
+    type: "작업중지권",
+    reporter: "최동현",
+    reporterTeam: "전기 1팀",
+    datetime: "2024-01-19 16:20",
+    location: "102동 2코어",
+    riskFactor: "크레인 작업 중 접근 금지 구역 침범",
+    countermeasure: "작업 중지 및 안전 구역 재설정",
     status: "조치완료",
-    response: "추가 조명 설치 완료",
+    manager: "홍길동",
+    response: "안전 구역 재설정 완료",
+    appropriatenessScore: 10,
+    noveltyScore: 8,
+    totalScore: 18,
   },
 ];
 
