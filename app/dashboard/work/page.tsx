@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import MobileView from "@/components/MobileView";
 import { mockWorkLog, mockWorkOrders } from "@/lib/mock-data";
-import { FileText, CheckCircle2, Clock, MapPin, User, AlertTriangle } from "lucide-react";
+import { FileText, CheckCircle2, Clock, MapPin, User, AlertTriangle, Smartphone } from "lucide-react";
 
 type WorkOrder = {
   id: number;
@@ -25,6 +26,8 @@ export default function WorkManagementPage() {
   const [selectedDate] = useState("2024-01-20");
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>(mockWorkOrders);
   const [showWorkOrderDetail, setShowWorkOrderDetail] = useState<number | null>(null);
+  const [showMobile, setShowMobile] = useState(false);
+  const [selectedWorkOrderId, setSelectedWorkOrderId] = useState<number | null>(null);
 
   // 작업일보에서 개인별 작업지시서 생성
   const generateWorkOrder = (taskId: number) => {
@@ -63,7 +66,14 @@ export default function WorkManagementPage() {
           : order
       )
     );
+    setShowMobile(false);
+    setSelectedWorkOrderId(null);
     alert("위험성평가에 동의하셨습니다. TBM 일지 생성이 준비되었습니다.");
+  };
+
+  const openMobileView = (orderId: number) => {
+    setSelectedWorkOrderId(orderId);
+    setShowMobile(true);
   };
 
   return (
@@ -116,13 +126,29 @@ export default function WorkManagementPage() {
                       </div>
                       <div className="mt-1 text-sm font-medium">{task.task}</div>
                     </div>
-                    <Button
-                      onClick={() => generateWorkOrder(task.id)}
-                      size="sm"
-                      className="bg-safety-navy hover:bg-safety-navy-light"
-                    >
-                      작업지시서 생성
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => generateWorkOrder(task.id)}
+                        size="sm"
+                        className="bg-safety-navy hover:bg-safety-navy-light"
+                      >
+                        작업지시서 생성
+                      </Button>
+                      {workOrders.find((o) => o.workerId === task.id && o.status === "pending") && (
+                        <Button
+                          onClick={() => {
+                            const order = workOrders.find((o) => o.workerId === task.id);
+                            if (order) openMobileView(order.id);
+                          }}
+                          size="sm"
+                          variant="outline"
+                          className="border-blue-500 text-blue-600 hover:bg-blue-50"
+                        >
+                          <Smartphone className="w-4 h-4 mr-1" />
+                          앱에서 확인
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -199,16 +225,30 @@ export default function WorkManagementPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       {order.status === "pending" && (
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAgree(order.id);
-                          }}
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          위험성평가 확인
-                        </Button>
+                        <>
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openMobileView(order.id);
+                            }}
+                            size="sm"
+                            variant="outline"
+                            className="border-blue-500 text-blue-600 hover:bg-blue-50"
+                          >
+                            <Smartphone className="w-4 h-4 mr-1" />
+                            앱에서 확인
+                          </Button>
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAgree(order.id);
+                            }}
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            위험성평가 확인
+                          </Button>
+                        </>
                       )}
                       {order.status === "agreed" && (
                         <CheckCircle2 className="w-5 h-5 text-green-600" />
@@ -253,6 +293,86 @@ export default function WorkManagementPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* 가상 핸드폰 화면 - 개인별 작업지시서 위험성평가 확인 */}
+      <MobileView
+        isOpen={showMobile}
+        onClose={() => {
+          setShowMobile(false);
+          setSelectedWorkOrderId(null);
+        }}
+        title="작업지시서 확인"
+      >
+        {selectedWorkOrderId && (() => {
+          const order = workOrders.find((o) => o.id === selectedWorkOrderId);
+          if (!order) return null;
+
+          return (
+            <div className="p-4 space-y-4">
+              <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
+                <div className="font-semibold mb-2">개인별 작업지시서</div>
+                <div className="text-sm text-gray-600 mb-1">{order.date}</div>
+                <div className="text-sm font-medium">{order.workerName} ({order.team})</div>
+              </div>
+
+              <div className="border rounded-xl p-4">
+                <div className="font-semibold mb-2">{order.task}</div>
+                <div className="text-sm text-gray-600 mb-4">
+                  <MapPin className="w-4 h-4 inline mr-1" />
+                  {order.location}
+                </div>
+
+                <div className="mb-4">
+                  <div className="text-xs font-semibold text-red-600 mb-2 flex items-center gap-1">
+                    <AlertTriangle className="w-4 h-4" />
+                    위험요인
+                  </div>
+                  <ul className="text-sm text-gray-700 space-y-1 ml-5">
+                    {order.risks.map((risk, idx) => (
+                      <li key={idx} className="list-disc">{risk}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="mb-4">
+                  <div className="text-xs font-semibold text-green-600 mb-2 flex items-center gap-1">
+                    <CheckCircle2 className="w-4 h-4" />
+                    안전대책
+                  </div>
+                  <ul className="text-sm text-gray-700 space-y-1 ml-5">
+                    {order.measures.map((measure, idx) => (
+                      <li key={idx} className="list-disc">{measure}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                {order.status === "pending" && (
+                  <Button
+                    onClick={() => handleAgree(order.id)}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    위험성평가 확인 및 서명
+                  </Button>
+                )}
+
+                {order.status === "agreed" && (
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-center">
+                    <CheckCircle2 className="w-6 h-6 text-green-600 mx-auto mb-2" />
+                    <div className="text-sm font-semibold text-green-700">동의 완료</div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      {order.agreedAt && new Date(order.agreedAt).toLocaleString("ko-KR")}
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-3 p-3 bg-blue-50 rounded-lg text-xs text-blue-700">
+                  서명 완료 시 TBM 일지로 자동 연동됩니다.
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      </MobileView>
     </div>
   );
 }
