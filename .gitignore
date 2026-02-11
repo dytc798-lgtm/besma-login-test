@@ -69,5 +69,9 @@ test/
 *.iml
 *.bat
 
-.vercel
-.env*.local
+# dart/flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+
