@@ -3,33 +3,57 @@
 import Link from "next/link";
 import { ARCH_ROUTES, HQ_ADMIN_FUNCTIONS } from "@/lib/architecture-config";
 import { FunctionSection, WireframeMock } from "../components/FunctionSection";
+import {
+  MINI_CANVAS_PADDING,
+  MINI_BOX_TO_ARROW,
+  MINI_LABEL_PAD,
+  MINI_LABEL_ABOVE,
+  MINI_ARROW_MIN_LENGTH,
+  MiniDiagramWrapper,
+} from "../components/MiniDiagramLayout";
 
 function MiniDiagramHq() {
-  const g = 40;
-  const arrowLen = 90;
-  const x1 = 20;
-  const x2 = x1 + 80 + g + arrowLen + g;
-  const x3 = x2 + 100 + g + 50 + g;
+  const pad = MINI_CANVAS_PADDING;
+  const box1W = 80;
+  const box1H = 60;
+  const x1 = pad;
+  const arrow1Start = x1 + box1W + MINI_BOX_TO_ARROW;
+  const arrow1End = arrow1Start + MINI_ARROW_MIN_LENGTH;
+  const x2 = arrow1End + MINI_BOX_TO_ARROW;
+  const box2W = 100;
+  const arrow2Len = 50;
+  const arrow2Start = x2 + box2W + MINI_BOX_TO_ARROW;
+  const arrow2End = arrow2Start + arrow2Len;
+  const x3 = arrow2End + MINI_BOX_TO_ARROW;
+  const box3W = 50;
+  const centerY = pad + box1H / 2;
+  const label1Text = "관리 현황 공유";
+  const label2Text = "알림 발송";
+  const labelW1 = label1Text.length * 8 + MINI_LABEL_PAD * 2;
+  const labelW2 = label2Text.length * 8 + MINI_LABEL_PAD * 2;
+  const labelH = 12 + MINI_LABEL_PAD * 2;
+  const viewWidth = x3 + box3W + pad;
+  const viewHeight = pad + box1H + pad;
   return (
-    <svg viewBox={`0 0 ${x3 + 60} 90`} className="h-auto w-full max-w-md" aria-hidden>
+    <MiniDiagramWrapper viewWidth={viewWidth} viewHeight={viewHeight}>
       <defs>
         <marker id="hArrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
           <path d="M0 0 L8 3 L0 6 z" fill="#64748b" />
         </marker>
       </defs>
-      <rect x={x1} y="15" width="80" height="60" rx="8" fill="#f8fafc" stroke="#94a3b8" strokeWidth="1" />
-      <text x={x1 + 10} y="48" fontSize="12" fill="#334155">플랫폼</text>
-      <line x1={x1 + 80 + g} y1="45" x2={x1 + 80 + g + arrowLen} y2="45" stroke="#64748b" strokeWidth="1" markerEnd="url(#hArrow)" />
-      <rect x={x1 + 80 + g + arrowLen / 2 - 48} y="28" width="96" height="18" rx="4" fill="white" stroke="#e2e8f0" strokeWidth="1" />
-      <text x={x1 + 80 + g + arrowLen / 2} y="40" textAnchor="middle" fontSize="11" fontWeight="700" fill="#334155">관리 현황 공유</text>
-      <rect x={x2} y="15" width="100" height="60" rx="8" fill="#f1f5f9" stroke="#475569" strokeWidth="1.5" />
-      <text x={x2 + 10} y="45" fontSize="12" fontWeight="600" fill="#0f172a">본사 관리자</text>
-      <line x1={x2 + 100 + g} y1="45" x2={x2 + 100 + g + 50} y2="45" stroke="#64748b" strokeWidth="1" markerEnd="url(#hArrow)" />
-      <rect x={x2 + 100 + g + 25 - 36} y="28" width="72" height="18" rx="4" fill="white" stroke="#e2e8f0" strokeWidth="1" />
-      <text x={x2 + 100 + g + 25} y="40" textAnchor="middle" fontSize="11" fontWeight="700" fill="#334155">알림 발송</text>
-      <rect x={x3} y="15" width="50" height="60" rx="6" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="1" />
-      <text x={x3 + 10} y="48" fontSize="10" fill="#64748b">외부</text>
-    </svg>
+      <rect x={x1} y={pad} width={box1W} height={box1H} rx="8" fill="#f8fafc" stroke="#94a3b8" strokeWidth="1" />
+      <text x={x1 + 10} y={pad + box1H / 2 + 4} fontSize="12" fill="#334155">플랫폼</text>
+      <line x1={arrow1Start} y1={centerY} x2={arrow1End} y2={centerY} stroke="#64748b" strokeWidth="1" markerEnd="url(#hArrow)" />
+      <rect x={arrow1Start + (arrow1End - arrow1Start) / 2 - labelW1 / 2} y={centerY - MINI_LABEL_ABOVE - labelH} width={labelW1} height={labelH} rx="6" fill="white" stroke="#e2e8f0" strokeWidth="1" />
+      <text x={arrow1Start + (arrow1End - arrow1Start) / 2} y={centerY - MINI_LABEL_ABOVE - MINI_LABEL_PAD - 4} textAnchor="middle" fontSize="11" fontWeight="700" fill="#334155">{label1Text}</text>
+      <rect x={x2} y={pad} width={box2W} height={box1H} rx="8" fill="#f1f5f9" stroke="#475569" strokeWidth="1.5" />
+      <text x={x2 + 10} y={pad + box1H / 2 + 4} fontSize="12" fontWeight="600" fill="#0f172a">본사 관리자</text>
+      <line x1={arrow2Start} y1={centerY} x2={arrow2End} y2={centerY} stroke="#64748b" strokeWidth="1" markerEnd="url(#hArrow)" />
+      <rect x={arrow2Start + arrow2Len / 2 - labelW2 / 2} y={centerY - MINI_LABEL_ABOVE - labelH} width={labelW2} height={labelH} rx="6" fill="white" stroke="#e2e8f0" strokeWidth="1" />
+      <text x={arrow2Start + arrow2Len / 2} y={centerY - MINI_LABEL_ABOVE - MINI_LABEL_PAD - 4} textAnchor="middle" fontSize="11" fontWeight="700" fill="#334155">{label2Text}</text>
+      <rect x={x3} y={pad} width={box3W} height={box1H} rx="6" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="1" />
+      <text x={x3 + 10} y={pad + box1H / 2 + 4} fontSize="10" fill="#64748b">외부</text>
+    </MiniDiagramWrapper>
   );
 }
 
@@ -48,9 +72,11 @@ export default function ArchitectureHqAdminPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm overflow-visible">
         <h2 className="mb-3 text-[18px] font-semibold text-gray-900">업무 흐름 (해당 영역)</h2>
-        <MiniDiagramHq />
+        <div className="min-w-0">
+          <MiniDiagramHq />
+        </div>
       </div>
 
       <div className="space-y-4">

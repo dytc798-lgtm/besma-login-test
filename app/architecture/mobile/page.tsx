@@ -3,32 +3,45 @@
 import Link from "next/link";
 import { ARCH_ROUTES, MOBILE_FUNCTIONS } from "@/lib/architecture-config";
 import { FunctionSection, WireframeMock } from "../components/FunctionSection";
-
-const MINI_GAP = 40;
-const MINI_ARROW_LEN = 120;
+import {
+  MINI_CANVAS_PADDING,
+  MINI_BOX_TO_ARROW,
+  MINI_LABEL_PAD,
+  MINI_LABEL_ABOVE,
+  MINI_ARROW_MIN_LENGTH,
+  MiniDiagramWrapper,
+} from "../components/MiniDiagramLayout";
 
 function MiniDiagramMobile() {
+  const pad = MINI_CANVAS_PADDING;
   const boxW = 140;
   const boxH = 64;
-  const arrowStart = 20 + boxW + MINI_GAP;
-  const arrowEnd = arrowStart + MINI_ARROW_LEN;
-  const platformX = arrowEnd + MINI_GAP;
-  const centerY = 20 + boxH / 2;
+  const box1X = pad;
+  const arrowStart = box1X + boxW + MINI_BOX_TO_ARROW;
+  const arrowEnd = arrowStart + MINI_ARROW_MIN_LENGTH;
+  const box2X = arrowEnd + MINI_BOX_TO_ARROW;
+  const box2W = 80;
+  const centerY = pad + boxH / 2;
+  const labelText = "작업 결과 전송";
+  const labelW = labelText.length * 8 + MINI_LABEL_PAD * 2;
+  const labelH = 12 + MINI_LABEL_PAD * 2;
+  const viewWidth = box2X + box2W + pad;
+  const viewHeight = pad + boxH + pad;
   return (
-    <svg viewBox="0 0 420 100" className="h-auto w-full max-w-md" aria-hidden>
+    <MiniDiagramWrapper viewWidth={viewWidth} viewHeight={viewHeight}>
       <defs>
         <marker id="mArrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
           <path d="M0 0 L8 3 L0 6 z" fill="#64748b" />
         </marker>
       </defs>
-      <rect x="20" y="20" width={boxW} height={boxH} rx="8" fill="#eef2ff" stroke="#6366f1" strokeWidth="1" />
-      <text x="28" y="52" fontSize="12" fontWeight="600" fill="#1e1b4b">현장 근로자 (모바일)</text>
+      <rect x={box1X} y={pad} width={boxW} height={boxH} rx="8" fill="#eef2ff" stroke="#6366f1" strokeWidth="1" />
+      <text x={box1X + 8} y={pad + boxH / 2 + 4} fontSize="12" fontWeight="600" fill="#1e1b4b">현장 근로자 (모바일)</text>
       <line x1={arrowStart} y1={centerY} x2={arrowEnd} y2={centerY} stroke="#64748b" strokeWidth="1" markerEnd="url(#mArrow)" />
-      <rect x={arrowStart + (arrowEnd - arrowStart) / 2 - 42} y={centerY - 18} width="84" height="20" rx="4" fill="white" stroke="#e2e8f0" strokeWidth="1" />
-      <text x={arrowStart + (arrowEnd - arrowStart) / 2} y={centerY - 5} textAnchor="middle" fontSize="11" fontWeight="700" fill="#334155">작업 결과 전송</text>
-      <rect x={platformX} y="20" width="80" height={boxH} rx="8" fill="#f8fafc" stroke="#94a3b8" strokeWidth="1" />
-      <text x={platformX + 10} y="52" fontSize="11" fill="#334155">플랫폼</text>
-    </svg>
+      <rect x={arrowStart + (arrowEnd - arrowStart) / 2 - labelW / 2} y={centerY - MINI_LABEL_ABOVE - labelH} width={labelW} height={labelH} rx="6" fill="white" stroke="#e2e8f0" strokeWidth="1" />
+      <text x={arrowStart + (arrowEnd - arrowStart) / 2} y={centerY - MINI_LABEL_ABOVE - MINI_LABEL_PAD - 4} textAnchor="middle" fontSize="11" fontWeight="700" fill="#334155">{labelText}</text>
+      <rect x={box2X} y={pad} width={box2W} height={boxH} rx="8" fill="#f8fafc" stroke="#94a3b8" strokeWidth="1" />
+      <text x={box2X + 10} y={pad + boxH / 2 + 4} fontSize="11" fill="#334155">플랫폼</text>
+    </MiniDiagramWrapper>
   );
 }
 
@@ -52,11 +65,13 @@ export default function ArchitectureMobilePage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm overflow-visible">
         <h2 className="mb-3 text-[18px] font-semibold text-gray-900">
           업무 흐름 (해당 영역)
         </h2>
-        <MiniDiagramMobile />
+        <div className="min-w-0">
+          <MiniDiagramMobile />
+        </div>
       </div>
 
       <div className="space-y-4">

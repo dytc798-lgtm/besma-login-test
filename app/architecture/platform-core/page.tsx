@@ -3,28 +3,46 @@
 import Link from "next/link";
 import { ARCH_ROUTES, PLATFORM_CORE_FUNCTIONS } from "@/lib/architecture-config";
 import { FunctionSection, WireframeMock } from "../components/FunctionSection";
+import {
+  MINI_CANVAS_PADDING,
+  MINI_BOX_TO_ARROW,
+  MINI_LABEL_PAD,
+  MINI_LABEL_ABOVE,
+  MINI_ARROW_MIN_LENGTH,
+  MiniDiagramWrapper,
+} from "../components/MiniDiagramLayout";
 
 function MiniDiagramPlatform() {
-  const g = 36;
-  const arrowLen = 80;
-  const x1 = 20;
-  const x2 = x1 + 70 + g + arrowLen + g;
+  const pad = MINI_CANVAS_PADDING;
+  const box1W = 70;
+  const box1H = 60;
+  const x1 = pad;
+  const arrowStart = x1 + box1W + MINI_BOX_TO_ARROW;
+  const arrowEnd = arrowStart + MINI_ARROW_MIN_LENGTH;
+  const x2 = arrowEnd + MINI_BOX_TO_ARROW;
+  const box2W = 90;
+  const centerY = pad + box1H / 2;
+  const labelText = "작업 결과 전송";
+  const labelW = labelText.length * 8 + MINI_LABEL_PAD * 2;
+  const labelH = 12 + MINI_LABEL_PAD * 2;
+  const viewWidth = x2 + box2W + pad;
+  const viewHeight = pad + box1H + pad;
   return (
-    <svg viewBox={`0 0 ${x2 + 90} 80`} className="h-auto w-full max-w-md" aria-hidden>
+    <MiniDiagramWrapper viewWidth={viewWidth} viewHeight={viewHeight}>
       <defs>
         <marker id="pArrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
           <path d="M0 0 L8 3 L0 6 z" fill="#64748b" />
         </marker>
       </defs>
-      <rect x={x1} y="10" width="70" height="60" rx="8" fill="#eef2ff" stroke="#6366f1" strokeWidth="1" />
-      <text x={x1 + 8} y="42" fontSize="12" fill="#334155">모바일</text>
-      <line x1={x1 + 70 + g} y1="40" x2={x1 + 70 + g + arrowLen} y2="40" stroke="#64748b" strokeWidth="1" markerEnd="url(#pArrow)" />
-      <rect x={x1 + 70 + g + arrowLen / 2 - 42} y="23" width="84" height="16" rx="4" fill="white" stroke="#e2e8f0" strokeWidth="1" />
-      <text x={x1 + 70 + g + arrowLen / 2} y="35" textAnchor="middle" fontSize="11" fontWeight="700" fill="#334155">작업 결과 전송</text>
-      <rect x={x2} y="10" width="90" height="60" rx="8" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
-      <text x={x2 + 10} y="35" fontSize="12" fontWeight="600" fill="#0f172a">플랫폼 핵심</text>
-      <text x={x2 + 10} y="50" fontSize="10" fill="#64748b">엔진 · DB · MOC · OCR</text>
-    </svg>
+      <rect x={x1} y={pad} width={box1W} height={box1H} rx="8" fill="#eef2ff" stroke="#6366f1" strokeWidth="1" />
+      <text x={x1 + 8} y={pad + box1H / 2 + 4} fontSize="12" fill="#334155">모바일</text>
+      <line x1={arrowStart} y1={centerY} x2={arrowEnd} y2={centerY} stroke="#64748b" strokeWidth="1" markerEnd="url(#pArrow)" />
+      <rect x={arrowStart + (arrowEnd - arrowStart) / 2 - labelW / 2} y={centerY - MINI_LABEL_ABOVE - labelH} width={labelW} height={labelH} rx="6" fill="white" stroke="#e2e8f0" strokeWidth="1" />
+      <text x={arrowStart + (arrowEnd - arrowStart) / 2} y={centerY - MINI_LABEL_ABOVE - MINI_LABEL_PAD - 4} textAnchor="middle" fontSize="11" fontWeight="700" fill="#334155">{labelText}</text>
+      <rect x={x2} y={pad} width={box2W} height={box1H} rx="8" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
+      <text x={x2 + 10} y={pad + 22} fontSize="12" fontWeight="600" fill="#0f172a">플랫폼 핵심</text>
+      <text x={x2 + 10} y={pad + 38} fontSize="10" fill="#64748b">엔진 · DB · MOC</text>
+    </MiniDiagramWrapper>
   );
 }
 
@@ -43,9 +61,11 @@ export default function ArchitecturePlatformCorePage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm overflow-visible">
         <h2 className="mb-3 text-[18px] font-semibold text-gray-900">업무 흐름 (플랫폼 중심)</h2>
-        <MiniDiagramPlatform />
+        <div className="min-w-0">
+          <MiniDiagramPlatform />
+        </div>
       </div>
 
       <div className="space-y-4">

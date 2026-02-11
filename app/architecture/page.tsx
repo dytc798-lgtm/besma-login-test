@@ -11,24 +11,65 @@ import {
   EXTERNAL_FUNCTIONS,
 } from "@/lib/architecture-config";
 
-// 박스 간 최소 간격 120px, 화살표-박스 간격 40px, 화살표 최소 길이(텍스트+24*2) 확보
+// ========== [1] 레이아웃 규칙 상수 ==========
+const CANVAS_PADDING = 48;
+const CONTAINER_SAFE = 24;
+const BOX_EDGE_TO_ARROW = 32;
+const LABEL_ABOVE_ARROW = 12;
+const LABEL_PAD = 6;
+const LABEL_FONT_SIZE = 14;
+const LABEL_RADIUS = 6;
+// 라벨 길이 기준 최소 화살표: arrowLength >= labelWidth + 80
+const LABEL_APPROX_PX_PER_CHAR = 10;
+const MIN_ARROW_EXTRA = 80;
+const MIN_ARROW_LENGTH = Math.max(
+  180,
+  ...Object.values(ARROW_LABELS).map(
+    (t) => t.length * LABEL_APPROX_PX_PER_CHAR + MIN_ARROW_EXTRA
+  )
+);
+const GAP = BOX_EDGE_TO_ARROW + MIN_ARROW_LENGTH + BOX_EDGE_TO_ARROW;
+
 const BOX_W = 300;
 const BOX_H_TOP = 240;
 const BOX_H_ROW2 = 220;
-const GAP_BOX_ARROW = 40;
-const ARROW_MIN_LENGTH = 160;
-const GAP = GAP_BOX_ARROW + ARROW_MIN_LENGTH + GAP_BOX_ARROW; // 240
-const ROW0_Y = 40;
-const ROW1_Y = 40 + BOX_H_TOP + 80; // 360
 const EXTERNAL_W = 260;
+const ROW_GAP = 80;
+
+// ========== [2] 박스 배치 (grid, safe padding) ==========
+const ROW0_Y = CANVAS_PADDING;
+const ROW1_Y = CANVAS_PADDING + BOX_H_TOP + ROW_GAP;
 
 const BOX = {
-  mobile: { x: 40, y: ROW0_Y, w: BOX_W, h: BOX_H_TOP },
-  platform: { x: 40 + BOX_W + GAP, y: ROW0_Y, w: BOX_W, h: BOX_H_TOP },
-  external: { x: 40 + BOX_W + GAP + BOX_W + GAP, y: ROW0_Y, w: EXTERNAL_W, h: ROW1_Y + BOX_H_ROW2 - ROW0_Y },
-  siteAdmin: { x: 40, y: ROW1_Y, w: BOX_W, h: BOX_H_ROW2 },
-  hqAdmin: { x: 40 + BOX_W + GAP, y: ROW1_Y, w: BOX_W, h: BOX_H_ROW2 },
+  mobile: { x: CANVAS_PADDING, y: ROW0_Y, w: BOX_W, h: BOX_H_TOP },
+  platform: {
+    x: CANVAS_PADDING + BOX_W + GAP,
+    y: ROW0_Y,
+    w: BOX_W,
+    h: BOX_H_TOP,
+  },
+  external: {
+    x: CANVAS_PADDING + BOX_W + GAP + BOX_W + GAP,
+    y: ROW0_Y,
+    w: EXTERNAL_W,
+    h: ROW1_Y + BOX_H_ROW2 - ROW0_Y,
+  },
+  siteAdmin: { x: CANVAS_PADDING, y: ROW1_Y, w: BOX_W, h: BOX_H_ROW2 },
+  hqAdmin: {
+    x: CANVAS_PADDING + BOX_W + GAP,
+    y: ROW1_Y,
+    w: BOX_W,
+    h: BOX_H_ROW2,
+  },
 };
+
+// ========== [3] 콘텐츠 bbox → 캔버스 크기 ==========
+const CONTENT_MAX_X = BOX.external.x + BOX.external.w;
+const CONTENT_MAX_Y = ROW1_Y + BOX_H_ROW2;
+const VIEW_WIDTH = CONTENT_MAX_X + CANVAS_PADDING;
+const VIEW_HEIGHT = CONTENT_MAX_Y + CANVAS_PADDING;
+
+const BEND_Y = ROW1_Y - BOX_EDGE_TO_ARROW;
 
 function boxRight(b: { x: number; y: number; w: number; h: number }) {
   return { x: b.x + b.w, y: b.y + b.h / 2 };
@@ -43,11 +84,15 @@ function boxTop(b: { x: number; y: number; w: number; h: number }) {
   return { x: b.x + b.w / 2, y: b.y };
 }
 
-const VIEW_WIDTH = BOX.external.x + BOX.external.w + 40;
-const VIEW_HEIGHT = ROW1_Y + BOX_H_ROW2 + 40;
-const BEND_Y = ROW1_Y - GAP_BOX_ARROW;
+// 라벨 bbox (중앙 x,y 기준 반환된 width/height)
+function getLabelSize(text: string) {
+  const w =
+    text.length * LABEL_APPROX_PX_PER_CHAR + LABEL_PAD * 2;
+  const h = LABEL_FONT_SIZE + LABEL_PAD * 2;
+  return { w, h };
+}
 
-// 화살표 위 텍스트: 중앙 상단, 흰 배경 패딩 4px, 13~14px bold
+// 화살표 위 라벨: 중앙 상단 12px, 흰배경 padding 6px, border-radius 6px
 function ArrowLabel({
   x,
   y,
@@ -59,28 +104,25 @@ function ArrowLabel({
   text: string;
   id: string;
 }) {
-  const pad = 4;
-  const fontSize = 14;
-  const approxWidth = text.length * (fontSize * 0.9);
-  const w = approxWidth + pad * 2;
-  const h = fontSize + pad * 2;
+  const { w, h } = getLabelSize(text);
   return (
     <g id={id}>
       <rect
         x={x - w / 2}
-        y={y - h}
+        y={y - LABEL_ABOVE_ARROW - h}
         width={w}
         height={h}
-        rx="4"
+        rx={LABEL_RADIUS}
+        ry={LABEL_RADIUS}
         fill="white"
         stroke="#e2e8f0"
         strokeWidth="1"
       />
       <text
         x={x}
-        y={y - pad - fontSize / 3}
+        y={y - LABEL_ABOVE_ARROW - LABEL_PAD - LABEL_FONT_SIZE / 3}
         textAnchor="middle"
-        fontSize={fontSize}
+        fontSize={LABEL_FONT_SIZE}
         fontWeight="700"
         fill="#334155"
       >
@@ -100,13 +142,15 @@ export default function ArchitecturePage() {
   const hRight = boxRight(BOX.hqAdmin);
   const hCenterY = BOX.hqAdmin.y + BOX.hqAdmin.h / 2;
 
+  // [4] 화살표 경로: 박스 border로부터 32px
   const arrowY1 = ROW0_Y + BOX_H_TOP / 2;
-  const arrowX1Start = mRight.x + GAP_BOX_ARROW;
-  const arrowX1End = pLeft.x - GAP_BOX_ARROW;
-  const arrowX2Start = pRight.x + GAP_BOX_ARROW;
-  const arrowX2End = eLeft.x - GAP_BOX_ARROW;
-  const arrowX5Start = hRight.x + GAP_BOX_ARROW;
-  const arrowX5End = eLeft.x - GAP_BOX_ARROW;
+  const arrowX1Start = mRight.x + BOX_EDGE_TO_ARROW;
+  const arrowX1End = pLeft.x - BOX_EDGE_TO_ARROW;
+  const arrowX2Start = pRight.x + BOX_EDGE_TO_ARROW;
+  const arrowX2End = eLeft.x - BOX_EDGE_TO_ARROW;
+  const arrowX5Start = hRight.x + BOX_EDGE_TO_ARROW;
+  const arrowX5End = eLeft.x - BOX_EDGE_TO_ARROW;
+
 
   return (
     <div className="space-y-4">
@@ -115,17 +159,23 @@ export default function ArchitecturePage() {
           업무 흐름 구성도 (전체)
         </h1>
         <p className="mt-1 text-sm text-gray-500">
-          좌→우, 상→하 흐름 · 화살표와 텍스트 겹침 없음 · 클릭 시 해당 영역 상세로 이동
+          좌→우, 상→하 흐름 · 화살표/라벨 안전거리 32px · 잘림 없음(가로 스크롤)
         </p>
         <p className="mt-1 text-xs text-gray-400">
           보고용 · PPT 캡처 시 이 영역을 그대로 캡처하여 사용 가능
         </p>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+      {/* overflow-x: auto, overflow-y: visible, 컨테이너 경계 24px 이내 미접촉 */}
+      <div
+        className="overflow-x-auto overflow-y-visible rounded-xl border border-gray-200 bg-white shadow-sm"
+        style={{ padding: CONTAINER_SAFE }}
+      >
         <svg
           viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
-          className="h-auto w-full min-w-[900px]"
+          preserveAspectRatio="xMinYMin meet"
+          className="h-auto"
+          style={{ minWidth: VIEW_WIDTH }}
           role="img"
           aria-label="부현전기 안전보건 플랫폼 업무 흐름 구성도"
         >
@@ -152,8 +202,7 @@ export default function ArchitecturePage() {
             </marker>
           </defs>
 
-          {/* 화살표: 직선만, 박스와 40px 이격 */}
-          {/* 1. 현장 근로자 → 플랫폼 (가로) */}
+          {/* 1. 현장 근로자 → 플랫폼 */}
           <line
             x1={arrowX1Start}
             y1={arrowY1}
@@ -166,11 +215,11 @@ export default function ArchitecturePage() {
           <ArrowLabel
             id="l1"
             x={(arrowX1Start + arrowX1End) / 2}
-            y={arrowY1 - 14}
+            y={arrowY1}
             text={ARROW_LABELS.mobileToPlatform}
           />
 
-          {/* 2. 플랫폼 → 외부 (가로) */}
+          {/* 2. 플랫폼 → 외부 */}
           <line
             x1={arrowX2Start}
             y1={arrowY1}
@@ -183,11 +232,11 @@ export default function ArchitecturePage() {
           <ArrowLabel
             id="l2"
             x={(arrowX2Start + arrowX2End) / 2}
-            y={arrowY1 - 14}
+            y={arrowY1}
             text={ARROW_LABELS.platformToExternal}
           />
 
-          {/* 3. 플랫폼 → 현장 관리자 (L자): 라벨은 가로 구간 중앙 상단에 배치 */}
+          {/* 3. 플랫폼 → 현장 관리자 (L자) */}
           <path
             d={`M ${pBottom.x} ${pBottom.y} L ${pBottom.x} ${BEND_Y} L ${sTop.x} ${BEND_Y} L ${sTop.x} ${sTop.y}`}
             stroke="#64748b"
@@ -198,11 +247,11 @@ export default function ArchitecturePage() {
           <ArrowLabel
             id="l3"
             x={(pBottom.x + sTop.x) / 2}
-            y={BEND_Y - 14}
+            y={BEND_Y - LABEL_ABOVE_ARROW}
             text={ARROW_LABELS.platformToSiteAdmin}
           />
 
-          {/* 4. 플랫폼 → 본사 관리자 (세로): 라벨은 세로 구간 옆에 배치(박스와 겹치지 않음) */}
+          {/* 4. 플랫폼 → 본사 관리자 */}
           <path
             d={`M ${pBottom.x} ${pBottom.y} L ${pBottom.x} ${BEND_Y} L ${BOX.hqAdmin.x + BOX.hqAdmin.w / 2} ${BEND_Y} L ${BOX.hqAdmin.x + BOX.hqAdmin.w / 2} ${BOX.hqAdmin.y}`}
             stroke="#64748b"
@@ -212,12 +261,12 @@ export default function ArchitecturePage() {
           />
           <ArrowLabel
             id="l4"
-            x={pBottom.x - 70}
+            x={pBottom.x - 90}
             y={(pBottom.y + BEND_Y) / 2}
             text={ARROW_LABELS.platformToHqAdmin}
           />
 
-          {/* 5. 본사 관리자 → 외부 (가로) */}
+          {/* 5. 본사 관리자 → 외부 */}
           <line
             x1={arrowX5Start}
             y1={hCenterY}
@@ -230,12 +279,11 @@ export default function ArchitecturePage() {
           <ArrowLabel
             id="l5"
             x={(arrowX5Start + arrowX5End) / 2}
-            y={hCenterY - 14}
+            y={hCenterY}
             text={ARROW_LABELS.hqToExternal}
           />
 
-          {/* 박스: 그리기 순서를 화살표 뒤로 해서 박스가 위에 보이도록 */}
-          {/* 현장 근로자 (모바일) */}
+          {/* 박스 */}
           <Link href={ARCH_ROUTES.mobile}>
             <g className="cursor-pointer transition-opacity hover:opacity-90">
               <rect
@@ -266,7 +314,6 @@ export default function ArchitecturePage() {
             </g>
           </Link>
 
-          {/* 플랫폼 핵심 */}
           <Link href={ARCH_ROUTES.platformCore}>
             <g className="cursor-pointer transition-opacity hover:opacity-90">
               <rect
@@ -300,7 +347,6 @@ export default function ArchitecturePage() {
             </g>
           </Link>
 
-          {/* 외부 연동 */}
           <rect
             x={BOX.external.x}
             y={BOX.external.y}
@@ -327,7 +373,6 @@ export default function ArchitecturePage() {
             </text>
           ))}
 
-          {/* 현장 관리자 (웹) */}
           <Link href={ARCH_ROUTES.siteAdmin}>
             <g className="cursor-pointer transition-opacity hover:opacity-90">
               <rect
@@ -361,7 +406,6 @@ export default function ArchitecturePage() {
             </g>
           </Link>
 
-          {/* 본사 관리자 (웹) */}
           <Link href={ARCH_ROUTES.hqAdmin}>
             <g className="cursor-pointer transition-opacity hover:opacity-90">
               <rect
