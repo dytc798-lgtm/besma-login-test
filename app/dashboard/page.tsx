@@ -1,0 +1,356 @@
+"use client";
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  MapPin,
+  Flame,
+  AlertCircle,
+} from "lucide-react";
+import {
+  mockSites,
+  mockAlerts,
+  mockPTW,
+  mockEquipment,
+  mockWeather,
+  mockEducation,
+  mockTBM,
+  mockFeedback,
+  mockContractors,
+  mockRiskAssessment,
+} from "@/lib/mock-data";
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import MapView from "./components/MapView";
+import WeatherAlert from "./components/WeatherAlert";
+
+export default function DashboardPage() {
+  const contractorColors = {
+    S: "#22c55e",
+    A: "#3b82f6",
+    B: "#f59e0b",
+    C: "#ef4444",
+  };
+
+  const contractorData = mockContractors.map((item) => ({
+    name: `${item.grade}등급`,
+    value: item.count,
+    fill: contractorColors[item.grade as keyof typeof contractorColors],
+  }));
+
+  const equipmentData = mockEquipment.map((item) => ({
+    name: item.name,
+    status: item.check ? "제출" : "미제출",
+    value: item.check ? 1 : 0,
+  }));
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Map and KPIs */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* GIS Map */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div>
+                    <CardTitle>실시간 현장 현황 (GIS Map)</CardTitle>
+                    <CardDescription>배경에 지도가 있고 현장 위치에 핀(Pin) 표시</CardDescription>
+                  </div>
+                  <div className="text-lg font-bold text-safety-navy">
+                    금일 전체 출역인원 : <span className="text-blue-600">1,024명</span>
+                  </div>
+                </div>
+                <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full">실시간 관제</span>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <MapView sites={mockSites} />
+              
+              {/* 현장 대시보드 링크 */}
+              <div className="mt-4">
+                <a
+                  href="/dashboard/site-dashboard"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-safety-navy hover:bg-safety-navy-light text-white rounded-lg transition-colors"
+                >
+                  <MapPin className="w-4 h-4" />
+                  현장 대시보드
+                </a>
+              </div>
+
+              {/* KPIs */}
+              <div className="grid grid-cols-3 gap-4 mt-4">
+                <div className="bg-safety-navy text-white p-4 rounded-lg">
+                  <div className="text-xs text-gray-300 mb-1">무재해 달성률</div>
+                  <div className="text-2xl font-bold mb-2">96.4%</div>
+                  <div className="text-xs text-gray-300">목표 98% / 전일 대비 ▲0.8%</div>
+                </div>
+                <div className="bg-safety-navy text-white p-4 rounded-lg">
+                  <div className="text-xs text-gray-300 mb-1">전국 현장 수</div>
+                  <div className="text-2xl font-bold mb-2">124개소</div>
+                  <div className="text-xs text-gray-300">신규 3개 · 준공 임박 5개</div>
+                </div>
+                <div className="bg-safety-navy text-white p-4 rounded-lg">
+                  <div className="text-xs text-gray-300 mb-1">오늘 위험요인 신고</div>
+                  <div className="text-2xl font-bold mb-2 text-orange-300">14건</div>
+                  <div className="text-xs text-gray-300">조치 완료 9건 · 진행중 5건</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* PTW Approval */}
+          <Card>
+            <CardHeader>
+              <CardTitle>작업 허가(PTW) 승인 대기</CardTitle>
+              <CardDescription>화기/밀폐/고소 작업 등 승인이 필요한 건수</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {mockPTW.map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Flame className="w-5 h-5 text-red-600" />
+                      <span className="font-medium">{item.type}</span>
+                    </div>
+                    <span className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+                      {item.count}건
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Equipment Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle>오늘의 고위험 장비 현황</CardTitle>
+              <CardDescription>크레인, 지게차, 고소작업대 가동 현황 및 사전 점검표 제출 여부</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={equipmentData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="#ef4444" />
+                </BarChart>
+              </ResponsiveContainer>
+              <div className="mt-4 space-y-2">
+                {mockEquipment.map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-sm">
+                    <span>{item.name}</span>
+                    <div className="flex items-center gap-2">
+                      <span className={item.check ? "text-green-600" : "text-red-600"}>
+                        {item.check ? "제출" : "미제출"}
+                      </span>
+                      {!item.check && <AlertCircle className="w-4 h-4 text-red-600" />}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column */}
+        <div className="space-y-6">
+          {/* Weather & Health */}
+          <Card>
+            <CardHeader>
+              <CardTitle>근로자 건강 & 기상 모니터링</CardTitle>
+              <CardDescription>현재 날씨 및 건강 알림</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <WeatherAlert
+                condition={mockWeather.condition}
+                temperature={mockWeather.temperature}
+                alert={mockWeather.alert}
+              />
+            </CardContent>
+          </Card>
+
+          {/* 1월 팀별 문서 취합률 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>1월 팀별 문서 취합률</CardTitle>
+              <CardDescription>팀별 필수 안전 서류 제출 현황</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {[
+                  { team: "1팀", rate: 92.5, submitted: 37, total: 40 },
+                  { team: "2팀", rate: 88.3, submitted: 35, total: 40 },
+                  { team: "3팀", rate: 95.0, submitted: 38, total: 40 },
+                  { team: "4팀", rate: 85.0, submitted: 34, total: 40 },
+                ].map((item) => (
+                  <div key={item.team}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="font-medium">{item.team}</span>
+                      <span className="font-medium">{item.rate}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div
+                        className={`h-2.5 rounded-full transition-all ${
+                          item.rate >= 90
+                            ? "bg-green-600"
+                            : item.rate >= 80
+                            ? "bg-yellow-600"
+                            : "bg-red-600"
+                        }`}
+                        style={{ width: `${item.rate}%` }}
+                      />
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {item.submitted}/{item.total} 제출완료
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Feedback Loop */}
+          <Card>
+            <CardHeader>
+              <CardTitle>안전 신문고</CardTitle>
+              <CardDescription>접수, 조치중, 조치완료 상태</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {mockFeedback.map((item) => (
+                  <div key={item.id} className="p-3 border rounded-lg text-sm">
+                    <div className="font-medium mb-1">{item.title}</div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">{item.date}</span>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full ${
+                          item.status === "조치완료"
+                            ? "bg-green-100 text-green-700"
+                            : item.status === "조치중"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-blue-100 text-blue-700"
+                        }`}
+                      >
+                        {item.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Contractor Evaluation */}
+          <Card>
+            <CardHeader>
+              <CardTitle>협력사 평가 현황</CardTitle>
+              <CardDescription>이번 달 S/A/B/C 등급 업체 비율</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={contractorData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {contractorData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+              {mockContractors.find((c) => c.grade === "C") && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                  ⚠️ C등급 업체 진입 시 경고 모달 표시
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Risk Assessment */}
+          <Card>
+            <CardHeader>
+              <CardTitle>위험성 평가 현황</CardTitle>
+              <CardDescription>현장별 평가 진행률 및 조치율</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {mockRiskAssessment.map((item, idx) => (
+                  <div key={idx}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>{item.label}</span>
+                      <span className="font-medium">{item.value}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${
+                          item.value >= 90
+                            ? "bg-green-600"
+                            : item.value >= 70
+                            ? "bg-yellow-600"
+                            : "bg-red-600"
+                        }`}
+                        style={{ width: `${item.value}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Education & TBM */}
+          <Card>
+            <CardHeader>
+              <CardTitle>교육 및 TBM 이행률</CardTitle>
+              <CardDescription>오늘 예정된 교육 대비 참석 서명 완료율</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span>안전 교육</span>
+                    <span className="font-medium">{mockEducation.percentage}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className="bg-blue-600 h-2.5 rounded-full transition-all"
+                      style={{ width: `${mockEducation.percentage}%` }}
+                    />
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {mockEducation.completed}/{mockEducation.scheduled} 완료
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span>TBM 이행률</span>
+                    <span className="font-medium">{mockTBM.percentage}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className="bg-green-600 h-2.5 rounded-full transition-all"
+                      style={{ width: `${mockTBM.percentage}%` }}
+                    />
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {mockTBM.completed}/{mockTBM.scheduled} 완료
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}

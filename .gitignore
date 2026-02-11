@@ -1,0 +1,73 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# flutter
+pubspec.yaml
+pubspec.lock
+android/
+ios/
+linux/
+macos/
+windows/
+web/
+test/
+
+# design documents
+*.pptx
+*.xlsx
+*.doc
+*.docx
+*.txt
+!README.md
+!package.json
+!package-lock.json
+
+# images (keep only in public/)
+*.jpg
+*.png
+!public/**/*.png
+!public/**/*.jpg
+
+# demo files
+*.html
+!web/index.html
+
+# ide
+*.iml
+*.bat
+
+.vercel
+.env*.local
