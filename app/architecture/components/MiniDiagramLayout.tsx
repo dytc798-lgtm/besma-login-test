@@ -35,8 +35,7 @@ export function MiniDiagramWrapper({
       <svg
         viewBox={`0 0 ${viewWidth} ${viewHeight}`}
         preserveAspectRatio="xMinYMin meet"
-        className="h-auto"
-        style={{ minWidth: viewWidth }}
+        className="block h-auto w-full"
         aria-hidden
       >
         {children}

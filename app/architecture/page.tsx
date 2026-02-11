@@ -174,8 +174,7 @@ export default function ArchitecturePage() {
         <svg
           viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
           preserveAspectRatio="xMinYMin meet"
-          className="h-auto"
-          style={{ minWidth: VIEW_WIDTH }}
+          className="block h-auto w-full"
           role="img"
           aria-label="부현전기 안전보건 플랫폼 업무 흐름 구성도"
         >
