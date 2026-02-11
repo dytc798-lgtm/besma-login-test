@@ -132,6 +132,13 @@ function ArrowLabel({
   );
 }
 
+// 공통 라벨 Y 좌표 계산
+// 기본: 선에서 18px 위, 하단 공유 라인(l3/l4)은 +10px 내려서 살짝 아래 배치
+function getLabelY(lineY: number, sharedBottomLine = false) {
+  const base = lineY - 18;
+  return sharedBottomLine ? base + 10 : base;
+}
+
 export default function ArchitecturePage() {
   const mRight = boxRight(BOX.mobile);
   const pLeft = boxLeft(BOX.platform);
@@ -214,7 +221,7 @@ export default function ArchitecturePage() {
           <ArrowLabel
             id="l1"
             x={(arrowX1Start + arrowX1End) / 2}
-            y={arrowY1}
+            y={getLabelY(arrowY1)}
             text={ARROW_LABELS.mobileToPlatform}
           />
 
@@ -231,7 +238,7 @@ export default function ArchitecturePage() {
           <ArrowLabel
             id="l2"
             x={(arrowX2Start + arrowX2End) / 2}
-            y={arrowY1}
+            y={getLabelY(arrowY1)}
             text={ARROW_LABELS.platformToExternal}
           />
 
@@ -246,7 +253,7 @@ export default function ArchitecturePage() {
           <ArrowLabel
             id="l3"
             x={(pBottom.x + sTop.x) / 2}
-            y={BEND_Y - LABEL_ABOVE_ARROW}
+            y={getLabelY(BEND_Y, true)}
             text={ARROW_LABELS.platformToSiteAdmin}
           />
 
@@ -261,7 +268,7 @@ export default function ArchitecturePage() {
           <ArrowLabel
             id="l4"
             x={pBottom.x - 90}
-            y={(pBottom.y + BEND_Y) / 2}
+            y={getLabelY(BEND_Y, true)}
             text={ARROW_LABELS.platformToHqAdmin}
           />
 
@@ -278,7 +285,7 @@ export default function ArchitecturePage() {
           <ArrowLabel
             id="l5"
             x={(arrowX5Start + arrowX5End) / 2}
-            y={hCenterY}
+            y={getLabelY(hCenterY)}
             text={ARROW_LABELS.hqToExternal}
           />
 

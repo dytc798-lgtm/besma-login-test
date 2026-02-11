@@ -8,7 +8,8 @@ export const ARCH_ROUTES = {
   mobile: "/architecture/mobile",
   siteAdmin: "/architecture/site-admin",
   hqAdmin: "/architecture/hq-admin",
-  platformCore: "/architecture/platform-core",
+  // 플랫폼 개요 페이지 (플랫폼 박스 클릭 시 이동)
+  platformCore: "/architecture/platform",
 } as const;
 
 export const MOBILE_FUNCTIONS = [

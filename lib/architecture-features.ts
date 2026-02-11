@@ -83,20 +83,27 @@ export const MOBILE_FEATURES: Feature[] = [
     id: "mobile-work-order",
     title: "작업지시 확인",
     roleCategory: "mobile",
-    description: "모바일에서 작업지시 상세를 조회하고 TBM으로 연계",
+    description:
+      "모바일에서 작업지시를 수신·확인하고, 동의 문구 확인 후 서명으로 TBM/작업 가능 여부를 결정",
     processDiagram: {
       nodes: [
         node("worker", "현장 근로자(모바일)", "actor"),
+        node("inbox", "작업지시 수신"),
         node("list", "작업지시 목록"),
-        node("detail", "작업지시 상세"),
-        node("tbm", "TBM 시작"),
-        node("platform", "플랫폼 저장", "system"),
+        node("detail", "작업지시 상세 확인"),
+        node("consent", "동의 문구 확인"),
+        node("sign", "작업지시 서명(GPS)", "process"),
+        node("health", "Health-Lock/건강정보 확인", "system"),
+        node("platform", "플랫폼 저장 · 작업가능 표시", "system"),
       ],
       edges: [
-        edge("worker", "list", "로그인 / 목록 조회"),
+        edge("worker", "inbox", "로그인 / 알림 수신"),
+        edge("inbox", "list", "목록 조회"),
         edge("list", "detail", "작업 선택"),
-        edge("detail", "tbm", "TBM 버튼 클릭"),
-        edge("tbm", "platform", "TBM 세션 생성"),
+        edge("detail", "consent", "지시 사항 확인"),
+        edge("consent", "sign", "동의 문구 확인 후 서명"),
+        edge("sign", "health", "GPS·건강정보 검증"),
+        edge("health", "platform", "상태 '작업가능' 반영"),
       ],
     },
     uiMock: {
@@ -110,9 +117,31 @@ export const MOBILE_FEATURES: Feature[] = [
             { label: "작업장소", value: "A동 1층 변전실" },
             { label: "위험요인 요약", value: "감전, 낙하" },
           ],
+        },
+        {
+          heading: "동의 및 서명",
+          fields: [
+            {
+              label: "동의 문구",
+              value:
+                "본인은 현재 건강상태에 이상이 없으며, 작업지시 및 안전수칙을 숙지하고 이에 동의합니다.",
+            },
+            {
+              label: "서명 영역",
+              type: "signature",
+            },
+            {
+              label: "GPS 상태",
+              value: "현장 반경 50m 이내",
+            },
+            {
+              label: "Health-Lock 연계",
+              value: "최근 건강정보/주의표시 확인 후 작업가능 여부 표시",
+            },
+          ],
           actions: [
-            { label: "확인", variant: "secondary" },
-            { label: "TBM 시작", variant: "primary" },
+            { label: "서명 완료", variant: "primary" },
+            { label: "작업지시 거부", variant: "danger" },
           ],
         },
       ],

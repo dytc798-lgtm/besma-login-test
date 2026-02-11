@@ -2,17 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  ARCH_ROUTES,
-  type ArchitectureSection,
-} from "@/lib/architecture-config";
+import { ARCH_ROUTES, type ArchitectureSection } from "@/lib/architecture-config";
 
 const navItems: { key: ArchitectureSection; label: string; href: string }[] = [
   { key: "index", label: "전체 흐름", href: ARCH_ROUTES.index },
   { key: "mobile", label: "현장 근로자(모바일)", href: ARCH_ROUTES.mobile },
   { key: "siteAdmin", label: "현장 관리자(웹)", href: ARCH_ROUTES.siteAdmin },
   { key: "hqAdmin", label: "본사 관리자(웹)", href: ARCH_ROUTES.hqAdmin },
-  { key: "platformCore", label: "플랫폼 핵심", href: ARCH_ROUTES.platformCore },
+  { key: "platformCore", label: "플랫폼 개요", href: ARCH_ROUTES.platformCore },
+  // IA 전체 메뉴 맵
+  // @ts-expect-error: ia는 ArchitectureSection 타입에 포함되지 않지만 내비게이션용으로 확장
+  { key: "ia", label: "IA(전체 메뉴맵)", href: "/architecture/ia" },
 ];
 
 export default function ArchitectureLayout({
