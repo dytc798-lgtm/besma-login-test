@@ -5,300 +5,837 @@ export type IaItem = {
   title: string;
   description?: string;
   roleCategory: RoleCategory;
-  path: string; // 절대 경로 (/architecture/ia/...)
-  featureId?: string; // Feature.id 연결 (선택)
+  path: string;
+  featureId?: string;
   children?: IaItem[];
 };
 
 export const IA_ROOT = "/architecture/ia";
 
+/**
+ * 최종 메뉴트리 확정본 (Depth 1~3).
+ * 병합/분리/추가/삭제/명칭변경 금지.
+ * Role: 문서/화면은 HQ_ADMIN | SITE_ADMIN | WORKER. roleCategory는 hq-admin | site-admin | mobile.
+ */
 export const IA_ITEMS: IaItem[] = [
+  // ==================== A. 근로자 앱 (WORKER APP) ====================
   {
-    id: "app-mobile",
-    title: "[App] 현장근로자",
-    description:
-      "현장 근로자가 사용하는 모바일 앱 메뉴 구조 (대시보드, 작업지시, 위험신고, 작업중지권 등)",
+    id: "app-worker",
+    title: "근로자 앱 (WORKER APP)",
+    description: "근로자용 모바일 앱. 홈에 ‘작업중지’·‘위험요인신고’ 별도 버튼(고정 스펙).",
     roleCategory: "mobile",
-    path: `${IA_ROOT}/app/mobile`,
+    path: `${IA_ROOT}/app/worker`,
     children: [
       {
-        id: "app-mobile-home",
-        title: "홈 (대시보드/알림센터/기상정보)",
+        id: "app-worker-home",
+        title: "홈",
         description:
-          "현장 근로자용 홈 화면으로, 작업 일정, 알림, 기상정보를 한눈에 보여줍니다.",
+          "작업중지(SOS) 버튼·위험요인신고 버튼 홈 즉시 노출. 오늘 작업요약(금일 작업지시 상태).",
         roleCategory: "mobile",
-        path: `${IA_ROOT}/app/mobile/home`,
+        path: `${IA_ROOT}/app/worker/home`,
       },
       {
-        id: "app-mobile-smart-work-order",
-        title: "스마트작업지시 (서명/완료확인)",
-        description:
-          "모바일에서 작업지시를 수신·확인하고, 동의 문구 및 전자서명으로 완료 여부를 기록합니다.",
+        id: "app-worker-work",
+        title: "작업",
         roleCategory: "mobile",
-        path: `${IA_ROOT}/app/mobile/smart-work-order`,
-        featureId: "mobile-work-order",
+        path: `${IA_ROOT}/app/worker/work`,
+        children: [
+          {
+            id: "app-worker-work-today",
+            title: "금일 작업지시",
+            roleCategory: "mobile",
+            path: `${IA_ROOT}/app/worker/work/today`,
+            children: [
+              {
+                id: "app-worker-work-today-detail",
+                title: "작업지시 상세(위험요인/대책 확인 + 서명)",
+                roleCategory: "mobile",
+                path: `${IA_ROOT}/app/worker/work/today/detail`,
+                featureId: "mobile-work-order",
+              },
+              {
+                id: "app-worker-work-today-start",
+                title: "작업 시작(증빙용)",
+                roleCategory: "mobile",
+                path: `${IA_ROOT}/app/worker/work/today/start`,
+              },
+              {
+                id: "app-worker-work-today-end",
+                title: "작업 종료(서명 + 사진 업로드)",
+                roleCategory: "mobile",
+                path: `${IA_ROOT}/app/worker/work/today/end`,
+              },
+            ],
+          },
+          {
+            id: "app-worker-work-history",
+            title: "작업이력",
+            description: "일자별 작업지시/서명/사진 기록.",
+            roleCategory: "mobile",
+            path: `${IA_ROOT}/app/worker/work/history`,
+          },
+        ],
       },
       {
-        id: "app-mobile-danger-report",
-        title: "위험신고",
-        description:
-          "사진/음성/텍스트를 활용해 현장의 위험 상황을 즉시 신고합니다.",
+        id: "app-worker-safety",
+        title: "안전활동",
         roleCategory: "mobile",
-        path: `${IA_ROOT}/app/mobile/danger-report`,
-        featureId: "mobile-danger-report",
+        path: `${IA_ROOT}/app/worker/safety`,
+        children: [
+          {
+            id: "app-worker-safety-report",
+            title: "위험요인 신고",
+            roleCategory: "mobile",
+            path: `${IA_ROOT}/app/worker/safety/report`,
+            children: [
+              {
+                id: "app-worker-safety-report-input",
+                title: "입력(음성/촬영 + 텍스트)",
+                roleCategory: "mobile",
+                path: `${IA_ROOT}/app/worker/safety/report/input`,
+                featureId: "mobile-danger-report",
+              },
+              {
+                id: "app-worker-safety-report-nearmiss",
+                title: "아차사고 전환(체크박스)",
+                roleCategory: "mobile",
+                path: `${IA_ROOT}/app/worker/safety/report/nearmiss`,
+              },
+              {
+                id: "app-worker-safety-report-history",
+                title: "신고이력",
+                roleCategory: "mobile",
+                path: `${IA_ROOT}/app/worker/safety/report/history`,
+              },
+            ],
+          },
+          {
+            id: "app-worker-safety-tbm",
+            title: "TBM(자동생성/서명연동)",
+            roleCategory: "mobile",
+            path: `${IA_ROOT}/app/worker/safety/tbm`,
+            children: [
+              {
+                id: "app-worker-safety-tbm-today",
+                title: "금일 TBM 확인",
+                roleCategory: "mobile",
+                path: `${IA_ROOT}/app/worker/safety/tbm/today`,
+              },
+              {
+                id: "app-worker-safety-tbm-history",
+                title: "서명 이력",
+                roleCategory: "mobile",
+                path: `${IA_ROOT}/app/worker/safety/tbm/history`,
+              },
+            ],
+          },
+        ],
       },
       {
-        id: "app-mobile-stop-right",
-        title: "작업중지권",
-        description:
-          "위험 상황에서 근로자가 자율적으로 작업을 중지하고 본사까지 보고하는 기능입니다.",
+        id: "app-worker-evidence",
+        title: "증빙/내정보",
         roleCategory: "mobile",
-        path: `${IA_ROOT}/app/mobile/stop-right`,
-        featureId: "mobile-stop-right",
+        path: `${IA_ROOT}/app/worker/evidence`,
+        children: [
+          {
+            id: "app-worker-evidence-cert",
+            title: "이수증/자격",
+            description: "이수증 등록/조회(기본). QR은 옵션(기본 메뉴에 QR 배치 금지).",
+            roleCategory: "mobile",
+            path: `${IA_ROOT}/app/worker/evidence/cert`,
+          },
+          {
+            id: "app-worker-evidence-location",
+            title: "내 위치기록(조회)",
+            description: "최근 3개월 조회(기본). GPS 가변 주기·3개월 일반/5년 압축 보관.",
+            roleCategory: "mobile",
+            path: `${IA_ROOT}/app/worker/evidence/location`,
+          },
+        ],
       },
       {
-        id: "app-mobile-correction",
-        title: "지적사항 (개선조치)",
-        description:
-          "순찰/점검에서 발생한 지적사항을 근로자 관점에서 확인하고 개선조치 결과를 조회합니다.",
+        id: "app-worker-settings",
+        title: "설정",
         roleCategory: "mobile",
-        path: `${IA_ROOT}/app/mobile/correction`,
-      },
-      {
-        id: "app-mobile-mypage",
-        title: "마이페이지 (내정보/포인트/건강검진/활동이력)",
-        description:
-          "근로자의 기본정보, 안전포인트, 건강검진 이력, 교육·TBM 참여 이력을 조회합니다.",
-        roleCategory: "mobile",
-        path: `${IA_ROOT}/app/mobile/mypage`,
-      },
-      {
-        id: "app-mobile-settings",
-        title: "설정/동의",
-        description:
-          "푸시 알림, 위치/GPS, 개인정보 활용 및 Health-Lock 연계 동의 화면입니다.",
-        roleCategory: "mobile",
-        path: `${IA_ROOT}/app/mobile/settings`,
+        path: `${IA_ROOT}/app/worker/settings`,
+        children: [
+          {
+            id: "app-worker-settings-notify",
+            title: "알림/권한",
+            roleCategory: "mobile",
+            path: `${IA_ROOT}/app/worker/settings/notify`,
+          },
+          {
+            id: "app-worker-settings-logout",
+            title: "로그아웃",
+            roleCategory: "mobile",
+            path: `${IA_ROOT}/app/worker/settings/logout`,
+          },
+        ],
       },
     ],
   },
+
+  // ==================== B. 관리자 앱 (ADMIN APP) ====================
   {
-    id: "app-site-manager",
-    title: "[App] 현장관리자",
+    id: "app-admin",
+    title: "관리자 앱 (ADMIN APP)",
     description:
-      "현장관리자가 사용하는 관리자용 모바일/웹 앱 메뉴 구조입니다.",
+      "현장/본사 공용 관리자용 모바일. 위험요인신고/작업중지권은 홈 직접 노출 없음, 메뉴 진입 후 사용.",
     roleCategory: "site-admin",
-    path: `${IA_ROOT}/app/site-manager`,
+    path: `${IA_ROOT}/app/admin`,
     children: [
       {
-        id: "app-site-dashboard",
-        title: "대시보드 (현장현황/미결알림)",
+        id: "app-admin-home",
+        title: "홈(관리업무 중심)",
         description:
-          "현장의 작업 현황, 미결 알림, 위험신고 현황을 실시간으로 보여주는 현장 대시보드입니다.",
+          "현장 선택(권한 범위 내). 오늘 현장 요약(진행률/알림 배지). 빠른메뉴(작업관리/안전관리/문서/예산).",
         roleCategory: "site-admin",
-        path: `${IA_ROOT}/app/site-manager/dashboard`,
+        path: `${IA_ROOT}/app/admin/home`,
+      },
+      {
+        id: "app-admin-work",
+        title: "작업관리",
+        roleCategory: "site-admin",
+        path: `${IA_ROOT}/app/admin/work`,
+        children: [
+          {
+            id: "app-admin-work-order",
+            title: "작업지시(관리자용)",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/app/admin/work/order`,
+            children: [
+              {
+                id: "app-admin-work-order-create",
+                title: "작업지시 생성/배포(권한별)",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/app/admin/work/order/create`,
+              },
+              {
+                id: "app-admin-work-order-status",
+                title: "작업지시 현황(미확인/진행/종료)",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/app/admin/work/order/status`,
+              },
+              {
+                id: "app-admin-work-order-sign",
+                title: "개인별 서명 확인",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/app/admin/work/order/sign`,
+              },
+            ],
+          },
+          {
+            id: "app-admin-work-daily",
+            title: "작업일보(명일)",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/app/admin/work/daily`,
+            children: [
+              {
+                id: "app-admin-work-daily-write",
+                title: "작성(공무/작업팀장)",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/app/admin/work/daily/write`,
+              },
+              {
+                id: "app-admin-work-daily-submit",
+                title: "제출/공유",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/app/admin/work/daily/submit`,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "app-admin-safety",
+        title: "안전관리",
+        roleCategory: "site-admin",
+        path: `${IA_ROOT}/app/admin/safety`,
+        children: [
+          {
+            id: "app-admin-safety-opinion",
+            title: "의견청취관리대장(=위험신고처리)",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/app/admin/safety/opinion`,
+            children: [
+              {
+                id: "app-admin-safety-opinion-list",
+                title: "신고 목록/상태",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/app/admin/safety/opinion/list`,
+              },
+              {
+                id: "app-admin-safety-opinion-score",
+                title: "1차/2차 점수 입력(권한별)",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/app/admin/safety/opinion/score`,
+              },
+            ],
+          },
+          {
+            id: "app-admin-safety-sos",
+            title: "작업중지권(SOS) 목록",
+            description: "접수/조치상태 기록.",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/app/admin/safety/sos`,
+            featureId: "mobile-stop-right",
+          },
+          {
+            id: "app-admin-safety-inspection",
+            title: "점검/시정조치",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/app/admin/safety/inspection`,
+            children: [
+              {
+                id: "app-admin-safety-inspection-upload",
+                title: "점검표 업로드/조회",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/app/admin/safety/inspection/upload`,
+              },
+              {
+                id: "app-admin-safety-inspection-report",
+                title: "시정조치보고서(PDF 출력/저장/열람)",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/app/admin/safety/inspection/report`,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "app-admin-docs",
+        title: "문서함",
+        roleCategory: "site-admin",
+        path: `${IA_ROOT}/app/admin/docs`,
+        children: [
+          {
+            id: "app-admin-docs-legal",
+            title: "법정서류 업로드/조회",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/app/admin/docs/legal`,
+          },
+          {
+            id: "app-admin-docs-ocr",
+            title: "OCR 입력(옵션: 사진 확인 후 호출)",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/app/admin/docs/ocr`,
+            featureId: "core-ocr",
+          },
+        ],
+      },
+      {
+        id: "app-admin-budget",
+        title: "예산(현장 입력 범위)",
+        description: "예산은 본사 편성/통제. 현장은 사용실적 입력·조회만.",
+        roleCategory: "site-admin",
+        path: `${IA_ROOT}/app/admin/budget`,
+        children: [
+          {
+            id: "app-admin-budget-input",
+            title: "사용실적 입력",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/app/admin/budget/input`,
+          },
+          {
+            id: "app-admin-budget-view",
+            title: "사용현황 조회",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/app/admin/budget/view`,
+          },
+        ],
+      },
+      {
+        id: "app-admin-emergency",
+        title: "연락/비상",
+        description: "고도화 분리 가능. 포함 시 여기 배치.",
+        roleCategory: "site-admin",
+        path: `${IA_ROOT}/app/admin/emergency`,
+        children: [
+          {
+            id: "app-admin-emergency-contact",
+            title: "비상연락망(전화걸기)",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/app/admin/emergency/contact`,
+          },
+          {
+            id: "app-admin-emergency-card",
+            title: "비상대응카드(열람)",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/app/admin/emergency/card`,
+          },
+        ],
+      },
+      {
+        id: "app-admin-settings",
+        title: "설정",
+        roleCategory: "site-admin",
+        path: `${IA_ROOT}/app/admin/settings`,
+        children: [
+          {
+            id: "app-admin-settings-notify",
+            title: "알림/권한",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/app/admin/settings/notify`,
+          },
+          {
+            id: "app-admin-settings-logout",
+            title: "로그아웃",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/app/admin/settings/logout`,
+          },
+        ],
+      },
+    ],
+  },
+
+  // ==================== C. 현장 관리자 웹 (SITE WEB) ====================
+  {
+    id: "web-site",
+    title: "현장 관리자 웹 (SITE WEB)",
+    description: "SITE_ADMIN. 예산은 당 현장 사용실적 입력·조회만. 작업 완료 사진 승인/반려·작업관리 승인/반려 버튼 표시 금지.",
+    roleCategory: "site-admin",
+    path: `${IA_ROOT}/web/site`,
+    children: [
+      {
+        id: "web-site-dashboard",
+        title: "대시보드",
+        description:
+          "오늘 작업 진행률(공정표 표출 연계). 미확인/미서명/지연 알림.",
+        roleCategory: "site-admin",
+        path: `${IA_ROOT}/web/site/dashboard`,
         featureId: "site-dashboard",
       },
       {
-        id: "app-site-work-orders",
-        title: "작업지시 확인/미확인자 알림",
-        description:
-          "현장관리자가 발행한 작업지시의 확인 여부를 관리하고, 미확인자에게 알림을 전송합니다.",
+        id: "web-site-work",
+        title: "작업관리",
         roleCategory: "site-admin",
-        path: `${IA_ROOT}/app/site-manager/work-orders`,
+        path: `${IA_ROOT}/web/site/work`,
+        children: [
+          {
+            id: "web-site-work-daily",
+            title: "작업일보(명일)",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/web/site/work/daily`,
+            children: [
+              {
+                id: "web-site-work-daily-write",
+                title: "작성/제출/승인(소장 승인 포함)",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/web/site/work/daily/write`,
+              },
+            ],
+          },
+          {
+            id: "web-site-work-order",
+            title: "작업지시",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/web/site/work/order`,
+            children: [
+              {
+                id: "web-site-work-order-list",
+                title: "목록/상세",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/web/site/work/order/list`,
+              },
+              {
+                id: "web-site-work-order-sign",
+                title: "개인별 확인(서명) 상태",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/web/site/work/order/sign`,
+              },
+              {
+                id: "web-site-work-order-end",
+                title: "종료(서명+사진) 상태 조회",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/web/site/work/order/end`,
+              },
+            ],
+          },
+          {
+            id: "web-site-work-history",
+            title: "작업이력",
+            description: "기간/인원 필터 조회.",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/web/site/work/history`,
+          },
+        ],
       },
       {
-        id: "app-site-sign-photos",
-        title: "작업종료 사진/서명현황",
-        description:
-          "작업 종료 시 촬영된 사진과 작업완료 서명 현황을 조회합니다.",
+        id: "web-site-safety",
+        title: "안전관리",
         roleCategory: "site-admin",
-        path: `${IA_ROOT}/app/site-manager/sign-photos`,
-      },
-      {
-        id: "app-site-patrol",
-        title: "순찰 지적/개선지시 · 시정조치 피드백",
-        description:
-          "순찰 중 발견된 지적사항을 등록하고, 개선지시 및 피드백을 관리합니다.",
-        roleCategory: "site-admin",
-        path: `${IA_ROOT}/app/site-manager/patrol-correction`,
-        featureId: "site-risk-report",
-      },
-      {
-        id: "app-site-risk-stop",
-        title: "위험요인·작업중지 신고 수신/평가",
-        description:
-          "근로자의 위험신고와 작업중지권 발동 내용을 수신·평가하고, 조치 상태를 관리합니다.",
-        roleCategory: "site-admin",
-        path: `${IA_ROOT}/app/site-manager/risk-stop`,
-      },
-      {
-        id: "app-site-budget-photo",
-        title: "산안비 영수증 촬영",
-        description:
-          "모바일로 산안비 영수증을 촬영해 OCR 및 본사 집행 관리에 연계합니다.",
-        roleCategory: "site-admin",
-        path: `${IA_ROOT}/app/site-manager/budget-photo`,
-        featureId: "core-ocr",
-      },
-      {
-        id: "app-site-doc-quick-check",
-        title: "법적서류 간이확인",
-        description:
-          "현장에서 즉시 필요한 법적서류(작업허가서, 안전교육 이수 등)를 간단히 확인합니다.",
-        roleCategory: "site-admin",
-        path: `${IA_ROOT}/app/site-manager/doc-quick-check`,
-      },
-    ],
-  },
-  {
-    id: "web-site-manager",
-    title: "[Web] 현장관리자",
-    description:
-      "현장관리자용 웹 포털 메뉴로, 일지/TBM/위험성평가/문서/산안비/사고보고 등을 통합 관리합니다.",
-    roleCategory: "site-admin",
-    path: `${IA_ROOT}/web/site-manager`,
-    children: [
-      {
-        id: "web-site-daily",
-        title: "작업일보 연동 (일지관리/TBM출력)",
-        description:
-          "작업일보와 TBM 기록을 연동해 일지 관리 및 출력 기능을 제공합니다.",
-        roleCategory: "site-admin",
-        path: `${IA_ROOT}/web/site-manager/daily-report`,
-      },
-      {
-        id: "web-site-complete-cert",
-        title: "완료확인 (무재해확인서)",
-        description:
-          "작업 완료 후 무재해 확인서 등 완료증빙 문서를 관리·출력합니다.",
-        roleCategory: "site-admin",
-        path: `${IA_ROOT}/web/site-manager/complete-cert`,
-      },
-      {
-        id: "web-site-risk-db",
-        title: "위험성평가 조회",
-        description:
-          "현장의 작업별 위험성평가 결과를 조회하고 이력을 관리합니다.",
-        roleCategory: "site-admin",
-        path: `${IA_ROOT}/web/site-manager/risk-assessment`,
-        featureId: "core-risk-engine",
-      },
-      {
-        id: "web-site-stop-log",
-        title: "의견청취/중지 관리대장",
-        description:
-          "작업중지 및 의견청취 이력을 관리대장 형태로 기록·조회합니다.",
-        roleCategory: "site-admin",
-        path: `${IA_ROOT}/web/site-manager/stop-ledger`,
-      },
-      {
-        id: "web-site-inspection",
-        title: "점검/시정 출력",
-        description:
-          "점검 결과 및 시정조치 현황을 레포트 형태로 출력합니다.",
-        roleCategory: "site-admin",
-        path: `${IA_ROOT}/web/site-manager/inspection-report`,
+        path: `${IA_ROOT}/web/site/safety`,
+        children: [
+          {
+            id: "web-site-safety-risk",
+            title: "위험성평가",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/web/site/safety/risk`,
+            children: [
+              {
+                id: "web-site-safety-risk-write",
+                title: "현장 위험성평가 작성/조회",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/web/site/safety/risk/write`,
+                featureId: "core-risk-engine",
+              },
+              {
+                id: "web-site-safety-risk-std",
+                title: "표준 항목 참조(본사 표준DB 기반)",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/web/site/safety/risk/std`,
+              },
+            ],
+          },
+          {
+            id: "web-site-safety-tbm",
+            title: "TBM",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/web/site/safety/tbm`,
+            children: [
+              {
+                id: "web-site-safety-tbm-journal",
+                title: "TBM 일지(작업지시/서명 자동연동)",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/web/site/safety/tbm/journal`,
+              },
+              {
+                id: "web-site-safety-tbm-focus",
+                title: "중점위험 교육 항목 포함",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/web/site/safety/tbm/focus`,
+              },
+              {
+                id: "web-site-safety-tbm-export",
+                title: "출력(PDF/엑셀)",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/web/site/safety/tbm/export`,
+              },
+            ],
+          },
+          {
+            id: "web-site-safety-opinion",
+            title: "의견청취관리대장",
+            description: "신고 목록/처리(현장 1차). 음성 입력은 로컬 STT 텍스트만 저장(권장).",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/web/site/safety/opinion`,
+          },
+          {
+            id: "web-site-safety-inspection",
+            title: "점검",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/web/site/safety/inspection`,
+            children: [
+              {
+                id: "web-site-safety-inspection-patrol",
+                title: "순회점검표 업로드/조회",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/web/site/safety/inspection/patrol`,
+              },
+              {
+                id: "web-site-safety-inspection-supervisor",
+                title: "관리감독자 점검표 업로드/조회(자동 생성 기반 포함)",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/web/site/safety/inspection/supervisor`,
+              },
+            ],
+          },
+          {
+            id: "web-site-safety-correction",
+            title: "시정조치보고서",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/web/site/safety/correction`,
+            children: [
+              {
+                id: "web-site-safety-correction-register",
+                title: "등록/열람",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/web/site/safety/correction/register`,
+              },
+              {
+                id: "web-site-safety-correction-pdf",
+                title: "PDF 출력/서버 저장",
+                roleCategory: "site-admin",
+                path: `${IA_ROOT}/web/site/safety/correction/pdf`,
+              },
+            ],
+          },
+        ],
       },
       {
         id: "web-site-docs",
-        title: "문서업로드/준공서류",
-        description:
-          "현장 준공 서류 및 각종 안전문서를 업로드·보관합니다.",
+        title: "문서함",
         roleCategory: "site-admin",
-        path: `${IA_ROOT}/web/site-manager/docs`,
+        path: `${IA_ROOT}/web/site/docs`,
+        children: [
+          {
+            id: "web-site-docs-legal",
+            title: "법정서류 업로드/조회",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/web/site/docs/legal`,
+          },
+          {
+            id: "web-site-docs-edu",
+            title: "교육/자격 서류 관리(OCR 옵션)",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/web/site/docs/edu`,
+          },
+        ],
       },
       {
         id: "web-site-budget",
-        title: "산안비/예산 출력",
-        description:
-          "산업안전보건비 집행 및 예산 사용 현황을 집계·출력합니다.",
+        title: "예산(현장 범위)",
+        description: "본사 편성/통제. 현장은 사용실적 입력·조회만.",
         roleCategory: "site-admin",
-        path: `${IA_ROOT}/web/site-manager/budget`,
+        path: `${IA_ROOT}/web/site/budget`,
+        children: [
+          {
+            id: "web-site-budget-input",
+            title: "사용실적 입력",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/web/site/budget/input`,
+          },
+          {
+            id: "web-site-budget-view",
+            title: "사용현황 조회",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/web/site/budget/view`,
+          },
+        ],
       },
       {
-        id: "web-site-accident",
-        title: "사고보고 (초도/중간/종결)",
-        description:
-          "사고 발생 시 초도보고, 중간보고, 종결보고를 단계별로 관리합니다.",
+        id: "web-site-org",
+        title: "인력/조직",
         roleCategory: "site-admin",
-        path: `${IA_ROOT}/web/site-manager/accident-report`,
+        path: `${IA_ROOT}/web/site/org`,
+        children: [
+          {
+            id: "web-site-org-user",
+            title: "사용자/권한(현장 내)",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/web/site/org/user`,
+          },
+          {
+            id: "web-site-org-team",
+            title: "팀/작업자 현황",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/web/site/org/team`,
+          },
+        ],
       },
       {
-        id: "web-site-grade",
-        title: "등급평가 / 부정로그 / 자료·공지",
-        description:
-          "현장 등급평가, 부정행위 로그, 자료실 및 공지사항을 관리합니다.",
+        id: "web-site-settings",
+        title: "설정",
         roleCategory: "site-admin",
-        path: `${IA_ROOT}/web/site-manager/grade-log`,
+        path: `${IA_ROOT}/web/site/settings`,
+        children: [
+          {
+            id: "web-site-settings-site",
+            title: "현장정보",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/web/site/settings/site`,
+          },
+          {
+            id: "web-site-settings-notify",
+            title: "알림 설정",
+            roleCategory: "site-admin",
+            path: `${IA_ROOT}/web/site/settings/notify`,
+          },
+        ],
       },
     ],
   },
+
+  // ==================== D. 본사 관리자 웹 (HQ WEB) ====================
   {
     id: "web-hq",
-    title: "[Web] 본사관리자",
+    title: "본사 관리자 웹 (HQ WEB)",
     description:
-      "본사 관리자용 통합 포털로, 통합관제/KPI/결재함/표준DB/통계/시스템관리를 수행합니다.",
+      "HQ_ADMIN. 통합관제, KPI, 표준DB, 결재, 통계, 시스템(본사 Feature 6개 확정). 예산 편성/통제·네이버웍스 품의(메일 Subject 수집만).",
     roleCategory: "hq-admin",
     path: `${IA_ROOT}/web/hq`,
     children: [
       {
         id: "web-hq-monitoring",
-        title: "통합관제 (현황판/지도/리스크티커/퇴출·경고)",
-        description:
-          "전사 현황판, 지도 기반 모니터링, 리스크 티커, 퇴출·경고 대상 관리를 수행합니다.",
+        title: "통합관제",
         roleCategory: "hq-admin",
         path: `${IA_ROOT}/web/hq/monitoring`,
+        featureId: "hq-integrated-monitoring",
+        children: [
+          {
+            id: "web-hq-monitoring-map",
+            title: "전국 현장 지도(핀 상태)",
+            description:
+              "현장 클릭: 기본 정보 + 카카오지도 연계. SOS/긴급 이벤트 강조(깜빡임).",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/monitoring/map`,
+          },
+          {
+            id: "web-hq-monitoring-list",
+            title: "현장 목록",
+            description:
+              "현장 상태(서류/TBM/점검/사고). 담당자 지정현황(소장/공무/안전/관리감독자).",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/monitoring/list`,
+          },
+        ],
       },
       {
         id: "web-hq-kpi",
-        title: "KPI/문서취합/점수",
-        description:
-          "현장별 KPI와 문서 이행 현황을 취합하고 점수를 산정합니다.",
+        title: "KPI",
         roleCategory: "hq-admin",
         path: `${IA_ROOT}/web/hq/kpi`,
+        featureId: "hq-kpi",
+        children: [
+          {
+            id: "web-hq-kpi-dashboard",
+            title: "현장 KPI 대시보드",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/kpi/dashboard`,
+          },
+          {
+            id: "web-hq-kpi-grade",
+            title: "등급/점수 집계(연동 항목 포함)",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/kpi/grade`,
+          },
+        ],
+      },
+      {
+        id: "web-hq-stddb",
+        title: "표준 위험성평가 DB",
+        roleCategory: "hq-admin",
+        path: `${IA_ROOT}/web/hq/stddb`,
         featureId: "hq-standard-db",
+        children: [
+          {
+            id: "web-hq-stddb-manage",
+            title: "표준 공종/위험요인/대책 관리",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/stddb/manage`,
+          },
+          {
+            id: "web-hq-stddb-template",
+            title: "현장 적용 템플릿 관리",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/stddb/template`,
+          },
+        ],
       },
       {
         id: "web-hq-approval",
-        title: "결재함 (미결재/승인반려이력/산안비현황)",
-        description:
-          "미결재 문서와 승인/반려 이력, 산안비 결재 현황을 관리합니다.",
+        title: "결재/승인",
         roleCategory: "hq-admin",
         path: `${IA_ROOT}/web/hq/approval`,
+        featureId: "hq-approval",
+        children: [
+          {
+            id: "web-hq-approval-doc",
+            title: "문서 승인/반려(권한별)",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/approval/doc`,
+          },
+          {
+            id: "web-hq-approval-accident",
+            title: "사고보고서 결재(권한별)",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/approval/accident`,
+          },
+          {
+            id: "web-hq-approval-draft",
+            title: "기안/보고 결재(권한별)",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/approval/draft`,
+          },
+        ],
       },
       {
-        id: "web-hq-standard-db",
-        title:
-          "표준DB (위험성평가 승격/개정결재, 사고사례 자동축적, 스마트자료실)",
-        description:
-          "표준 위험성평가 DB 승격/개정, 사고사례 축적, 자료실을 관리합니다.",
+        id: "web-hq-statistics",
+        title: "통계",
         roleCategory: "hq-admin",
-        path: `${IA_ROOT}/web/hq/standard-db`,
-        featureId: "hq-standard-db",
-      },
-      {
-        id: "web-hq-stat",
-        title: "통계/평가 (등급관리)",
-        description:
-          "현장별 등급 및 안전보건 성과를 통계적으로 분석합니다.",
-        roleCategory: "hq-admin",
-        path: `${IA_ROOT}/web/hq/stat-grade`,
+        path: `${IA_ROOT}/web/hq/statistics`,
+        featureId: "hq-statistics",
+        children: [
+          {
+            id: "web-hq-statistics-opinion",
+            title: "의견청취(신고 건수/처리율/현장별)",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/statistics/opinion`,
+          },
+          {
+            id: "web-hq-statistics-inspection",
+            title: "점검/시정조치 통계",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/statistics/inspection`,
+          },
+          {
+            id: "web-hq-statistics-order",
+            title: "작업지시/서명 준수율",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/statistics/order`,
+          },
+        ],
       },
       {
         id: "web-hq-system",
-        title:
-          "시스템관리 (계정권한/알림관리/API모니터링/아카이브)",
-        description:
-          "계정·권한, 알림 정책, 외부 연동 API 모니터링, 데이터 아카이브를 관리합니다.",
+        title: "시스템 관리",
         roleCategory: "hq-admin",
         path: `${IA_ROOT}/web/hq/system`,
+        featureId: "hq-system-admin",
+        children: [
+          {
+            id: "web-hq-system-account",
+            title: "계정/권한(RBAC) 관리",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/system/account`,
+          },
+          {
+            id: "web-hq-system-site",
+            title: "현장 개설/준공/데이터 이관",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/system/site`,
+          },
+          {
+            id: "web-hq-system-notify",
+            title: "알림/푸시 정책",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/system/notify`,
+          },
+        ],
+      },
+      {
+        id: "web-hq-budget",
+        title: "예산(본사 고유)",
+        description: "본사 편성/통제. 네이버웍스 품의 목록은 메일 Subject 수집만.",
+        roleCategory: "hq-admin",
+        path: `${IA_ROOT}/web/hq/budget`,
+        children: [
+          {
+            id: "web-hq-budget-plan",
+            title: "예산 편성/통제",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/budget/plan`,
+          },
+          {
+            id: "web-hq-budget-exec",
+            title: "예산 집행 현황(현장 입력 취합)",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/budget/exec`,
+          },
+          {
+            id: "web-hq-budget-naver",
+            title: "네이버웍스 품의 목록(메일 Subject 수집 기반)",
+            roleCategory: "hq-admin",
+            path: `${IA_ROOT}/web/hq/budget/naver`,
+          },
+        ],
       },
     ],
   },
 ];
 
-// 평탄화된 IA 목록 (path로 검색용)
+/** 평탄화된 IA 목록 (path로 검색·generateStaticParams용) */
 export function flattenIaItems(items: IaItem[] = IA_ITEMS): IaItem[] {
   const result: IaItem[] = [];
   const walk = (nodes: IaItem[]) => {
@@ -310,4 +847,3 @@ export function flattenIaItems(items: IaItem[] = IA_ITEMS): IaItem[] {
   walk(items);
   return result;
 }
-

@@ -1,14 +1,32 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Brain, Mic, FileText, CheckCircle2, ArrowRight, Info, X, Network, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
+const STRUCTURE_ACCESS_PASSWORD = "1234";
+
 export default function LandingPage() {
+  const router = useRouter();
   const [showRequirements, setShowRequirements] = useState(false);
   const [showImplementationStatus, setShowImplementationStatus] = useState(false);
+  const [showStructurePassword, setShowStructurePassword] = useState(false);
+  const [structurePasswordInput, setStructurePasswordInput] = useState("");
+  const [structurePasswordError, setStructurePasswordError] = useState("");
+
+  const handleStructurePasswordSubmit = () => {
+    if (structurePasswordInput === STRUCTURE_ACCESS_PASSWORD) {
+      setShowStructurePassword(false);
+      setStructurePasswordInput("");
+      setStructurePasswordError("");
+      router.push("/architecture");
+    } else {
+      setStructurePasswordError("비밀번호가 올바르지 않습니다.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -35,19 +53,66 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Architecture Button */}
+      {/* 변경된 구조 진입: 녹색 버튼 + 비밀번호 1234 */}
       <div className="container mx-auto px-4 pt-6">
         <div className="flex justify-center">
-          <Link href="/architecture">
-            <Button
-              size="lg"
-              className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-full px-8 py-6 text-lg shadow-lg"
-            >
-              시스템 구성도 보기
-            </Button>
-          </Link>
+          <Button
+            size="lg"
+            className="bg-green-600 hover:bg-green-700 text-white font-bold rounded-full px-8 py-6 text-lg shadow-lg"
+            onClick={() => {
+              setShowStructurePassword(true);
+              setStructurePasswordInput("");
+              setStructurePasswordError("");
+            }}
+          >
+            변경된 구조 보기
+          </Button>
         </div>
       </div>
+
+      {/* 비밀번호 팝업: 1234 입력 시 /architecture 진입 */}
+      {showStructurePassword && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4">
+            <p className="text-center text-gray-700 mb-4">
+              비밀번호 8자리를 누르세요.
+            </p>
+            <input
+              type="password"
+              inputMode="numeric"
+              maxLength={8}
+              placeholder="비밀번호 입력"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-center text-lg tracking-widest"
+              value={structurePasswordInput}
+              onChange={(e) => {
+                setStructurePasswordInput(e.target.value.replace(/\D/g, "").slice(0, 8));
+                setStructurePasswordError("");
+              }}
+              onKeyDown={(e) => e.key === "Enter" && handleStructurePasswordSubmit()}
+              autoFocus
+            />
+            {structurePasswordError && (
+              <p className="text-red-600 text-sm mt-2 text-center">{structurePasswordError}</p>
+            )}
+            <div className="flex gap-2 mt-4">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setShowStructurePassword(false);
+                  setStructurePasswordInput("");
+                  setStructurePasswordError("");
+                }}
+              >
+                취소
+              </Button>
+              <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={handleStructurePasswordSubmit}>
+                확인
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-12 md:py-20">

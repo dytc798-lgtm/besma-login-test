@@ -13,7 +13,7 @@ export default function ArchitectureHqAdminPage() {
           본사 관리자 (웹)
         </h1>
         <p className="mt-1 text-[14px] text-gray-500">
-          표준 위험성평가 DB, 사고사례·KPI, 통합 관제, ERP 연동, 결재함
+          통합관제, KPI, 결재함, 표준 위험성평가 DB, 통계, 시스템관리
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Link

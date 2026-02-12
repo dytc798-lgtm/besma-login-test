@@ -1,7 +1,8 @@
+import type { RoleCategory as BaseRoleCategory } from "./roles";
+
+// 기능 그룹용 확장 (역할 외 플랫폼/외부 연동)
 export type RoleCategory =
-  | "mobile"
-  | "site-admin"
-  | "hq-admin"
+  | BaseRoleCategory
   | "platform-core"
   | "external";
 
@@ -426,33 +427,258 @@ export const SITE_ADMIN_FEATURES: Feature[] = [
   },
 ];
 
-// =============== 본사 관리자 기능 (축약) ===============
+// =============== 본사 관리자 기능 (견적서 기준 6개) ===============
 
 export const HQ_ADMIN_FEATURES: Feature[] = [
+  {
+    id: "hq-integrated-monitoring",
+    title: "통합관제",
+    roleCategory: "hq-admin",
+    description:
+      "전사 현장/계정/데이터 흐름을 실시간으로 모니터링하고 이상 징후를 탐지/대응합니다.",
+    processDiagram: {
+      nodes: [
+        node("hq-admin", "본사관리자(웹)", "actor"),
+        node("sites", "현장 데이터"),
+        node("rules", "이상징후 룰", "system"),
+        node("alerts", "알림/티켓"),
+        node("integrations", "연동 상태", "system"),
+        node("audit", "감사 로그", "system"),
+      ],
+      edges: [
+        edge("sites", "rules", "수집/집계"),
+        edge("rules", "alerts", "탐지/발행"),
+        edge("hq-admin", "alerts", "조치/배정"),
+        edge("integrations", "alerts", "장애 알림"),
+        edge("hq-admin", "audit", "조회"),
+      ],
+    },
+    uiMock: {
+      title: "통합관제",
+      sections: [
+        {
+          heading: "관제 대시보드",
+          fields: [
+            { label: "전사 현장 상태 KPI", value: "금일/주간/월간 요약" },
+            { label: "이상징후 룰", value: "미입력·급증·지연·오류 감지" },
+          ],
+        },
+        {
+          heading: "알림/티켓",
+          fields: [{ label: "담당자 배정/상태/코멘트", type: "table" }],
+          actions: [
+            { label: "알림 조회", variant: "secondary" },
+            { label: "티켓 처리", variant: "primary" },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "hq-kpi",
+    title: "KPI",
+    roleCategory: "hq-admin",
+    description:
+      "전사/조직/현장별 안전보건 KPI를 설계하고 목표·실적·추이를 관리합니다.",
+    processDiagram: {
+      nodes: [
+        node("hq-admin", "본사관리자(웹)", "actor"),
+        node("metrics", "지표 정의"),
+        node("targets", "목표"),
+        node("data", "집계 데이터", "system"),
+        node("reports", "리포트"),
+      ],
+      edges: [
+        edge("metrics", "targets", "지표 기준 목표 설정"),
+        edge("data", "reports", "집계/시각화"),
+        edge("hq-admin", "metrics", "정의/관리"),
+        edge("hq-admin", "reports", "조회/배포"),
+      ],
+    },
+    uiMock: {
+      title: "KPI",
+      sections: [
+        {
+          heading: "KPI 대시보드",
+          fields: [
+            { label: "지표 카탈로그", value: "정의·산식·데이터 소스·측정 주기" },
+            { label: "조직/현장 목표", value: "월/분기/연 설정" },
+          ],
+        },
+        {
+          heading: "실적/추이",
+          fields: [{ label: "실적 자동 집계·수동 보정", type: "table" }],
+          actions: [
+            { label: "리포트 생성", variant: "primary" },
+            { label: "내보내기(PDF/엑셀)", variant: "secondary" },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "hq-approval",
+    title: "결재함",
+    roleCategory: "hq-admin",
+    description:
+      "전사 결재 문서의 상신/검토/승인/반려 및 결재선/규정을 관리합니다.",
+    processDiagram: {
+      nodes: [
+        node("requester", "상신자", "actor"),
+        node("reviewer", "검토자", "actor"),
+        node("approver", "승인자", "actor"),
+        node("doc", "결재 문서"),
+        node("rules", "결재 규정/결재선", "system"),
+      ],
+      edges: [
+        edge("requester", "doc", "상신"),
+        edge("rules", "doc", "결재선 적용"),
+        edge("doc", "reviewer", "검토 요청"),
+        edge("doc", "approver", "승인 요청"),
+      ],
+    },
+    uiMock: {
+      title: "결재함",
+      sections: [
+        {
+          heading: "결재함(수신)",
+          fields: [
+            { label: "문서 유형별 결재 프로세스", value: "검토-승인-전결 등" },
+            { label: "결재선 템플릿", value: "조직/금액/리스크/문서유형 조건부" },
+          ],
+        },
+        {
+          heading: "문서 목록",
+          fields: [{ label: "미결재/승인반려 이력", type: "table" }],
+          actions: [
+            { label: "결재함", variant: "primary" },
+            { label: "상신함", variant: "secondary" },
+          ],
+        },
+      ],
+    },
+  },
   {
     id: "hq-standard-db",
     title: "표준 위험성평가 DB 관리",
     roleCategory: "hq-admin",
+    description:
+      "표준 공정/유해위험요인/대책/평가 기준을 관리하고 현장에 배포합니다.",
     processDiagram: {
       nodes: [
-        node("hq", "본사 관리자", "actor"),
-        node("editor", "평가표 편집"),
-        node("db", "표준 DB 저장", "system"),
-        node("sites", "현장 반영"),
+        node("hq-admin", "본사관리자(웹)", "actor"),
+        node("std-db", "표준DB"),
+        node("version", "버전/승인"),
+        node("sites", "현장 적용"),
       ],
       edges: [
-        edge("hq", "editor", "평가표 수정"),
-        edge("editor", "db", "버전 관리"),
-        edge("db", "sites", "현장에 배포"),
+        edge("hq-admin", "std-db", "등록/수정"),
+        edge("std-db", "version", "승인/배포 준비"),
+        edge("version", "sites", "배포"),
       ],
     },
     uiMock: {
       title: "표준 위험성평가 DB 관리",
       sections: [
         {
-          heading: "평가표 목록",
+          heading: "표준DB 목록",
           fields: [{ label: "표준 평가표", type: "table" }],
-          actions: [{ label: "새 평가표 추가", variant: "primary" }],
+          actions: [
+            { label: "새 평가표 추가", variant: "primary" },
+            { label: "엑셀 업로드", variant: "secondary" },
+            { label: "현장 배포", variant: "secondary" },
+          ],
+        },
+        {
+          heading: "버전/변경이력",
+          fields: [{ label: "버전 관리(초안/승인/배포)", type: "table" }],
+        },
+      ],
+    },
+  },
+  {
+    id: "hq-statistics",
+    title: "통계",
+    roleCategory: "hq-admin",
+    description:
+      "사고/교육/점검/위험성평가 등 주요 운영 데이터를 다차원 통계로 분석합니다.",
+    processDiagram: {
+      nodes: [
+        node("events", "운영 이벤트(사고/점검/교육)", "system"),
+        node("warehouse", "집계 저장소", "system"),
+        node("stats", "통계/분석"),
+        node("hq-admin", "본사관리자(웹)", "actor"),
+      ],
+      edges: [
+        edge("events", "warehouse", "수집/정제"),
+        edge("warehouse", "stats", "집계"),
+        edge("hq-admin", "stats", "조회/분석"),
+      ],
+    },
+    uiMock: {
+      title: "통계",
+      sections: [
+        {
+          heading: "통계 개요",
+          fields: [
+            { label: "기간/조직/현장/공종 다차원 필터", value: "사고·아차사고·위험성평가·점검·교육" },
+            { label: "Top N 위험요인/반복 이슈", value: "분석 결과" },
+          ],
+        },
+        {
+          heading: "분석 결과",
+          fields: [{ label: "커스텀 피벗/필터", type: "table" }],
+          actions: [
+            { label: "리포트 생성", variant: "primary" },
+            { label: "내보내기(엑셀/이미지)", variant: "secondary" },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "hq-system-admin",
+    title: "시스템관리",
+    roleCategory: "hq-admin",
+    description:
+      "조직/권한/계정/정책/코드/연동 등 플랫폼 운영을 위한 백오피스 기능을 관리합니다.",
+    processDiagram: {
+      nodes: [
+        node("hq-admin", "시스템관리자(웹)", "actor"),
+        node("iam", "IAM(RBAC/SSO)", "system"),
+        node("policy", "보안/운영 정책"),
+        node("integration", "외부 연동"),
+        node("logs", "감사/시스템 로그", "system"),
+      ],
+      edges: [
+        edge("hq-admin", "iam", "계정/권한 관리"),
+        edge("hq-admin", "policy", "정책 설정"),
+        edge("hq-admin", "integration", "키/웹훅 관리"),
+        edge("hq-admin", "logs", "조회"),
+      ],
+    },
+    uiMock: {
+      title: "시스템관리",
+      sections: [
+        {
+          heading: "조직/현장 관리",
+          fields: [
+            { label: "조직/현장 온보딩", value: "상태·계약·플랜·사용량" },
+            { label: "사용자 라이프사이클", value: "초대/잠금/탈퇴·SSO 매핑" },
+          ],
+        },
+        {
+          heading: "권한/역할(RBAC)",
+          fields: [
+            { label: "역할-권한-리소스", value: "메뉴 노출 제어(IA 연동)" },
+            { label: "보안정책", value: "비밀번호/세션/2FA/접속 IP 제한" },
+          ],
+          actions: [
+            { label: "조직 관리", variant: "primary" },
+            { label: "사용자/계정", variant: "secondary" },
+            { label: "권한/역할", variant: "secondary" },
+            { label: "연동/키 관리", variant: "secondary" },
+          ],
         },
       ],
     },
