@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- 작업지시(work order) 플로우: 작업지시 → 확인서명 → 시작 → 종료서명+사진 ---
+
+model Site {
+  id       String   @id @default(cuid())
+  name     String
+  tenantId String   @default("default")
+  workers  Worker[]
+  orders   WorkOrder[]
+}
+
+model Worker {
+  id          String       @id @default(cuid())
+  name        String
+  role        String       @default("WORKER")
+  siteId      String?
+  site        Site?        @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  assignedOrders WorkOrder[] @relation("WorkOrderAssignee")
+}
+
+model WorkOrder {
+  id                  String    @id @default(cuid())
+  tenantId            String    @default("default")
+  siteId              String
+  site                Site?     @relation(fields: [siteId], references: [id], onDelete: Restrict)
+  worklogId           String    // safety_worklog id (in-memory or future sync)
+  status              String    // DRAFT | ISSUED | CONFIRMED | STARTED | ENDED
+  assigneeId          String?
+  assignee            Worker?   @relation("WorkOrderAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  confirmSignedAt     DateTime?
+  confirmSignatureData String?  @db.Text
+  startedAt           DateTime?
+  endSignedAt         DateTime?
+  endSignatureData    String?   @db.Text
+  endPhotoUrl         String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdBy           String?
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  tenantId   String   @default("default")
+  entityType String   // e.g. "work_order"
+  entityId   String
+  action     String   // created | issued | confirmed | started | ended
+  actorId    String?
+  payload    String?  @db.Text // JSON
+  createdAt  DateTime @default(now())
+}

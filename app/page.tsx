@@ -1,32 +1,81 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Brain, Mic, FileText, CheckCircle2, ArrowRight, Info, X, Network, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
-const STRUCTURE_ACCESS_PASSWORD = "1234";
+const BETA_CLICK_THRESHOLD = 5;
 
 export default function LandingPage() {
   const router = useRouter();
   const [showRequirements, setShowRequirements] = useState(false);
   const [showImplementationStatus, setShowImplementationStatus] = useState(false);
-  const [showStructurePassword, setShowStructurePassword] = useState(false);
-  const [structurePasswordInput, setStructurePasswordInput] = useState("");
-  const [structurePasswordError, setStructurePasswordError] = useState("");
+  const [showComingSoon, setShowComingSoon] = useState(false);
+  const [betaClickCount, setBetaClickCount] = useState(0);
+  const [showBetaModal, setShowBetaModal] = useState(false);
+  const [betaPasscodeInput, setBetaPasscodeInput] = useState("");
+  const [betaPasscodeError, setBetaPasscodeError] = useState("");
+  const [betaSubmitting, setBetaSubmitting] = useState(false);
 
-  const handleStructurePasswordSubmit = () => {
-    if (structurePasswordInput === STRUCTURE_ACCESS_PASSWORD) {
-      setShowStructurePassword(false);
-      setStructurePasswordInput("");
-      setStructurePasswordError("");
-      router.push("/architecture");
-    } else {
-      setStructurePasswordError("비밀번호가 올바르지 않습니다.");
+  const openComingSoon = useCallback(
+    (e?: React.MouseEvent) => {
+      if (e) {
+        e.preventDefault();
+      }
+      setShowComingSoon(true);
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (!showComingSoon) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowComingSoon(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [showComingSoon]);
+
+  const handleBetaTriggerClick = useCallback(() => {
+    setBetaClickCount((c) => {
+      const next = c + 1;
+      if (next >= BETA_CLICK_THRESHOLD) {
+        setShowBetaModal(true);
+        setBetaPasscodeInput("");
+        setBetaPasscodeError("");
+        return 0;
+      }
+      return next;
+    });
+  }, []);
+
+  const handleBetaPasscodeSubmit = useCallback(async () => {
+    setBetaPasscodeError("");
+    setBetaSubmitting(true);
+    try {
+      const res = await fetch("/api/beta/unlock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passcode: betaPasscodeInput }),
+        credentials: "include",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setShowBetaModal(false);
+        setBetaPasscodeInput("");
+        router.push("/beta");
+        return;
+      }
+      setBetaPasscodeError(data?.error || "패스코드가 올바르지 않습니다.");
+    } finally {
+      setBetaSubmitting(false);
     }
-  };
+  }, [betaPasscodeInput, router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -53,67 +102,6 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* 변경된 구조 진입: 녹색 버튼 + 비밀번호 1234 */}
-      <div className="container mx-auto px-4 pt-6">
-        <div className="flex justify-center">
-          <Button
-            size="lg"
-            className="bg-green-600 hover:bg-green-700 text-white font-bold rounded-full px-8 py-6 text-lg shadow-lg"
-            onClick={() => {
-              setShowStructurePassword(true);
-              setStructurePasswordInput("");
-              setStructurePasswordError("");
-            }}
-          >
-            변경된 구조 보기
-          </Button>
-        </div>
-      </div>
-
-      {/* 비밀번호 팝업: 1234 입력 시 /architecture 진입 */}
-      {showStructurePassword && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4">
-            <p className="text-center text-gray-700 mb-4">
-              비밀번호 8자리를 누르세요.
-            </p>
-            <input
-              type="password"
-              inputMode="numeric"
-              maxLength={8}
-              placeholder="비밀번호 입력"
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-center text-lg tracking-widest"
-              value={structurePasswordInput}
-              onChange={(e) => {
-                setStructurePasswordInput(e.target.value.replace(/\D/g, "").slice(0, 8));
-                setStructurePasswordError("");
-              }}
-              onKeyDown={(e) => e.key === "Enter" && handleStructurePasswordSubmit()}
-              autoFocus
-            />
-            {structurePasswordError && (
-              <p className="text-red-600 text-sm mt-2 text-center">{structurePasswordError}</p>
-            )}
-            <div className="flex gap-2 mt-4">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => {
-                  setShowStructurePassword(false);
-                  setStructurePasswordInput("");
-                  setStructurePasswordError("");
-                }}
-              >
-                취소
-              </Button>
-              <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={handleStructurePasswordSubmit}>
-                확인
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-12 md:py-20">
         <div className="max-w-4xl mx-auto text-center">
@@ -128,13 +116,13 @@ export default function LandingPage() {
             안전 관리는 선택이 아닌 필수입니다.
           </p>
           <div className="flex gap-4 justify-center flex-wrap mb-4">
-            <Link href="/demo/role-selection">
+            <Link href="/demo/role-selection" onClick={(e) => openComingSoon(e)}>
               <Button size="lg" className="bg-safety-navy hover:bg-safety-navy-light text-white px-8 py-6 text-lg">
                 플랫폼 데모 시작
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
-            <Link href="/admin/logic-map">
+            <Link href="/admin/logic-map" onClick={(e) => openComingSoon(e)}>
               <Button size="lg" variant="outline" className="border-purple-600 text-purple-600 hover:bg-purple-50 px-8 py-6 text-lg">
                 시스템 로직 맵
                 <Network className="ml-2 w-5 h-5" />
@@ -144,7 +132,7 @@ export default function LandingPage() {
               size="lg" 
               variant="outline" 
               className="border-industrial-yellow text-industrial-yellow hover:bg-industrial-yellow hover:text-white px-8 py-6 text-lg"
-              onClick={() => setShowRequirements(true)}
+              onClick={openComingSoon}
             >
               🛠️ 스마일소프트 구현요청
               <Info className="ml-2 w-5 h-5" />
@@ -153,14 +141,18 @@ export default function LandingPage() {
               size="lg" 
               variant="outline" 
               className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white px-8 py-6 text-lg"
-              onClick={() => setShowImplementationStatus(true)}
+              onClick={openComingSoon}
             >
               🛠️ 신규 구현 요청 내역
               <CheckCircle2 className="ml-2 w-5 h-5" />
             </Button>
           </div>
           <div className="text-sm text-gray-500">
-            <Link href="/plan" className="hover:text-safety-navy underline">
+            <Link
+              href="/plan"
+              className="hover:text-safety-navy underline"
+              onClick={(e) => openComingSoon(e)}
+            >
               안전보건플랫폼 구축계획 보기
             </Link>
           </div>
@@ -268,7 +260,7 @@ export default function LandingPage() {
                   <li>역할별 렌더링: 선택한 역할에 따라 메뉴 구조 즉시 적용</li>
                 </ul>
                 <div className="mt-3">
-                  <Link href="/demo/role-selection">
+                  <Link href="/demo/role-selection" onClick={(e) => openComingSoon(e)}>
                     <Button variant="outline" size="sm" className="text-xs">
                       <ArrowRight className="w-3 h-3 mr-1" />
                       롤 선택 화면 참고
@@ -386,19 +378,28 @@ export default function LandingPage() {
                       </div>
                     </div>
                     <div className="mt-3 flex gap-2">
-                      <Link href="/dashboard/headquarters/safety-policy?role=headquarters">
+                      <Link
+                        href="/dashboard/headquarters/safety-policy?role=headquarters"
+                        onClick={(e) => openComingSoon(e)}
+                      >
                         <Button variant="outline" size="sm" className="text-xs">
                           <ArrowRight className="w-3 h-3 mr-1" />
                           안전보건 방침 참고
                         </Button>
                       </Link>
-                      <Link href="/dashboard/headquarters/biannual-report?role=headquarters">
+                      <Link
+                        href="/dashboard/headquarters/biannual-report?role=headquarters"
+                        onClick={(e) => openComingSoon(e)}
+                      >
                         <Button variant="outline" size="sm" className="text-xs">
                           <ArrowRight className="w-3 h-3 mr-1" />
                           반기 이행점검 보고 참고
                         </Button>
                       </Link>
-                      <Link href="/dashboard/headquarters/quarterly-meeting?role=headquarters">
+                      <Link
+                        href="/dashboard/headquarters/quarterly-meeting?role=headquarters"
+                        onClick={(e) => openComingSoon(e)}
+                      >
                         <Button variant="outline" size="sm" className="text-xs">
                           <ArrowRight className="w-3 h-3 mr-1" />
                           분기 경영회의 참고
@@ -439,7 +440,10 @@ export default function LandingPage() {
                       </div>
                     </div>
                     <div className="mt-3">
-                      <Link href="/dashboard/site-manager/tbm-work-order?role=site-manager">
+                      <Link
+                        href="/dashboard/site-manager/tbm-work-order?role=site-manager"
+                        onClick={(e) => openComingSoon(e)}
+                      >
                         <Button variant="outline" size="sm" className="text-xs">
                           <ArrowRight className="w-3 h-3 mr-1" />
                           TBM 및 작업지시 참고
@@ -517,13 +521,19 @@ export default function LandingPage() {
                       </div>
                     </div>
                     <div className="mt-3 flex gap-2">
-                      <Link href="/dashboard/worker-app/mypage?role=worker">
+                      <Link
+                        href="/dashboard/worker-app/mypage?role=worker"
+                        onClick={(e) => openComingSoon(e)}
+                      >
                         <Button variant="outline" size="sm" className="text-xs">
                           <ArrowRight className="w-3 h-3 mr-1" />
                           기능인 앱 참고
                         </Button>
                       </Link>
-                      <Link href="/dashboard/headquarters/personnel-management?role=headquarters">
+                      <Link
+                        href="/dashboard/headquarters/personnel-management?role=headquarters"
+                        onClick={(e) => openComingSoon(e)}
+                      >
                         <Button variant="outline" size="sm" className="text-xs">
                           <ArrowRight className="w-3 h-3 mr-1" />
                           인사 관리 참고
@@ -564,7 +574,7 @@ export default function LandingPage() {
                       </div>
                     </div>
                     <div className="mt-3">
-                      <Link href="/admin/logic-map">
+                      <Link href="/admin/logic-map" onClick={(e) => openComingSoon(e)}>
                         <Button variant="outline" size="sm" className="text-xs">
                           <ArrowRight className="w-3 h-3 mr-1" />
                           시스템 로직 맵 참고
@@ -609,6 +619,87 @@ export default function LandingPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* 베타 진입: 우하단 숨김 녹색 버튼 (연속 5회 클릭 시에만 모달) */}
+      <button
+        type="button"
+        aria-label="베타"
+        className="fixed bottom-3 right-3 z-50 w-3 h-3 rounded-full bg-green-600/40 hover:bg-green-600/55 focus:outline-none focus:ring-0 transition-colors"
+        style={{ minWidth: 12, minHeight: 12 }}
+        onClick={handleBetaTriggerClick}
+      />
+
+      {/* 베타 패스코드 모달 (환경변수 BETA_PASSCODE 검증) */}
+      {showBetaModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4">
+            <p className="text-center text-gray-700 mb-4">패스코드를 입력하세요.</p>
+            <input
+              type="password"
+              autoComplete="off"
+              placeholder="패스코드"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-center"
+              value={betaPasscodeInput}
+              onChange={(e) => {
+                setBetaPasscodeInput(e.target.value);
+                setBetaPasscodeError("");
+              }}
+              onKeyDown={(e) => e.key === "Enter" && handleBetaPasscodeSubmit()}
+              autoFocus
+            />
+            {betaPasscodeError && (
+              <p className="text-red-600 text-sm mt-2 text-center">{betaPasscodeError}</p>
+            )}
+            <div className="flex gap-2 mt-4">
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={betaSubmitting}
+                onClick={() => {
+                  setShowBetaModal(false);
+                  setBetaPasscodeInput("");
+                  setBetaPasscodeError("");
+                }}
+              >
+                취소
+              </Button>
+              <Button
+                className="flex-1 bg-green-600 hover:bg-green-700"
+                disabled={betaSubmitting}
+                onClick={handleBetaPasscodeSubmit}
+              >
+                {betaSubmitting ? "확인 중..." : "확인"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 공개 영역 공사중 안내 모달 */}
+      {showComingSoon && (
+        <div
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50"
+          onClick={() => setShowComingSoon(false)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">공사중</h2>
+            <p className="text-sm text-gray-700 mb-6">
+              현재 기능을 준비 중입니다. (문의: 안전보건실)
+            </p>
+            <div className="flex justify-end">
+              <Button
+                className="bg-safety-navy hover:bg-safety-navy-light text-white px-4 py-2 text-sm"
+                onClick={() => setShowComingSoon(false)}
+              >
+                확인
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

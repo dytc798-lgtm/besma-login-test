@@ -1,0 +1,24 @@
+# 로컬 베타 개발용 PostgreSQL
+# Neon/Supabase 등 Managed Postgres 사용 시 이 파일 없이 DATABASE_URL만 교체하면 됨
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: besma-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: besma
+    ports:
+      - "5432:5432"
+    volumes:
+      - besma_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d besma"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  besma_pgdata:
