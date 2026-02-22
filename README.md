@@ -118,6 +118,10 @@ npm run dev
 
 `npm run dev` 후 허용 경로만 열리는지 확인: `http://localhost:3000/` → 200, `http://localhost:3000/beta` → 쿠키 없으면 `/`로 리다이렉트. `http://localhost:3000/admin`, `http://localhost:3000/demo`, `http://localhost:3000/plan` 등은 모두 `/`로 리다이렉트되어야 함.
 
+### 홈페이지 수정이 안 보일 때
+
+로컬: 저장 후 브라우저 **강력 새로고침**(Ctrl+Shift+R) 또는 개발 서버 재시작. 배포(Vercel): 최신 커밋 푸시 후 배포 완료까지 대기 → 대시보드에서 **Redeploy** 한 번 실행해 보기. 루트 레이아웃에 `dynamic = "force-dynamic"`이 있어 캐시로 인한 미반영을 줄였음.
+
 ### DB 스크립트 (베타)
 
 - `npm run db:migrate` — Prisma 마이그레이션 적용
