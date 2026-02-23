@@ -36,8 +36,14 @@ export default function WorkerAppPage() {
     };
   }, []);
   const [stopWorkData, setStopWorkData] = useState({ location: "", riskFactor: "", countermeasure: "" });
+  const [stopWorkNotificationSent, setStopWorkNotificationSent] = useState(false);
   const [reportRiskData, setReportRiskData] = useState({ location: "", riskFactor: "", countermeasure: "" });
   const [showSignaturePad, setShowSignaturePad] = useState(false);
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
   const [signatureData, setSignatureData] = useState<string | null>(null);
   const [isSigned, setIsSigned] = useState(false);
   const [showWorkCompleteSignature, setShowWorkCompleteSignature] = useState(false);
@@ -49,9 +55,9 @@ export default function WorkerAppPage() {
       alert("모든 항목을 입력해주세요.");
       return;
     }
-    alert("작업중지권이 신고되었습니다. 안전신문고에 등록되었습니다.");
+    setStopWorkNotificationSent(true);
     setStopWorkData({ location: "", riskFactor: "", countermeasure: "" });
-    // 실제로는 안전신문고 데이터에 추가
+    // 실제로는 안전신문고/관리자 알림 API 호출
   };
 
   const handleReportRiskSubmit = () => {
@@ -132,7 +138,7 @@ export default function WorkerAppPage() {
       <div className="flex justify-center">
         <MobileView
           isOpen={true}
-          onClose={() => {}}
+          onClose={() => setMobileView("main")}
           title={
             mobileView === "main" ? "BESMA 근로자" : 
             mobileView === "points" ? "부현포인트" : 
@@ -144,6 +150,15 @@ export default function WorkerAppPage() {
         >
         {mobileView === "main" && (
           <div className="p-4 space-y-4">
+            {stopWorkNotificationSent && (
+              <div className="p-4 rounded-xl border-2 border-green-300 bg-green-50 text-green-800">
+                <div className="flex items-center gap-2 font-semibold mb-1">
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  관리자에게 작업중지권 알림이 전송되었습니다.
+                </div>
+                <p className="text-sm text-green-700">X 버튼으로 닫은 후에도 이 화면에서 확인할 수 있습니다.</p>
+              </div>
+            )}
             <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-2xl">
               <div className="text-sm opacity-90 mb-1">안녕하세요</div>
               <div className="text-2xl font-bold mb-2">박성구님</div>
@@ -390,6 +405,12 @@ export default function WorkerAppPage() {
 
         {mobileView === "stop-work" && (
           <div className="p-4 space-y-4">
+            <div className="flex items-center justify-between text-sm text-gray-700 pb-2 border-b">
+              <span>
+                {now.toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit", weekday: "short" })} {now.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+              </span>
+              <span className="font-semibold text-safety-navy">김부현</span>
+            </div>
             <div className="bg-red-50 p-4 rounded-xl border border-red-200 text-center">
               <Ban className="w-12 h-12 text-red-600 mx-auto mb-3" />
               <div className="text-xl font-bold text-red-700 mb-2">작업중지권 사용</div>
@@ -428,9 +449,19 @@ export default function WorkerAppPage() {
                 />
               </div>
               <Button onClick={handleStopWorkSubmit} className="w-full bg-red-600 hover:bg-red-700">
-                작업중지권 신고
+                작업중지권 신고 (관리자 알림 전송)
               </Button>
             </div>
+
+            {stopWorkNotificationSent && (
+              <div className="p-4 rounded-xl border-2 border-green-300 bg-green-50 text-green-800">
+                <div className="flex items-center gap-2 font-semibold mb-1">
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  관리자에게 알림이 전송되었습니다.
+                </div>
+                <p className="text-sm text-green-700">X를 누르면 메인 화면에서도 전송 확인을 볼 수 있습니다.</p>
+              </div>
+            )}
 
             <div className="p-3 bg-yellow-50 rounded-lg text-xs text-yellow-700">
               작업중지권 신고 시 안전신문고에 자동 등록됩니다.

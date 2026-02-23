@@ -73,21 +73,26 @@ export default function BetaPage() {
           </div>
         </div>
 
-        <p className="text-sm text-gray-500 mb-2">기타 참고 링크</p>
+        <p className="text-sm text-gray-500 mb-2 mt-6">데모 · 참고</p>
         <ul className="space-y-2">
+          <li>
+            <Link href="/demo/role-selection" className="text-blue-600 hover:underline font-medium">
+              데모 대시보드 (역할 선택 → 본사/현장/근로자)
+            </Link>
+          </li>
           <li>
             <Link href="/architecture" className="text-blue-600 hover:underline">
               시스템 구성도 / IA
             </Link>
           </li>
           <li>
-            <Link href="/dashboard" className="text-blue-600 hover:underline">
-              대시보드
+            <Link href="/admin/logic-map" className="text-blue-600 hover:underline">
+              시스템 로직 맵
             </Link>
           </li>
           <li>
-            <Link href="/admin/logic-map" className="text-blue-600 hover:underline">
-              시스템 로직 맵
+            <Link href="/dashboard/sitemap" className="text-blue-600 hover:underline">
+              사이트맵 (전체 메뉴)
             </Link>
           </li>
         </ul>

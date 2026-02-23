@@ -192,8 +192,8 @@ function DashboardContent({
             );
           })}
           
-          {/* 사이트맵 링크 */}
-          <div className="mt-4 pt-4 border-t border-safety-navy-light">
+          {/* 사이트맵 · 베타 */}
+          <div className="mt-4 pt-4 border-t border-safety-navy-light space-y-1">
             <Link
               href="/dashboard/sitemap"
               onClick={() => setIsMobileMenuOpen(false)}
@@ -201,6 +201,14 @@ function DashboardContent({
             >
               <Map className="w-5 h-5" />
               <span className="text-sm font-medium">사이트맵 (전체 메뉴)</span>
+            </Link>
+            <Link
+              href="/beta"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-300 hover:bg-safety-navy-light"
+            >
+              <Shield className="w-5 h-5" />
+              <span className="text-sm font-medium">베타 홈</span>
             </Link>
           </div>
         </nav>
@@ -250,11 +258,18 @@ function DashboardContent({
             <Link
               href="/demo/role-selection"
               className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-safety-navy"
-              title="홈으로 돌아가기"
+              title="역할 선택"
             >
               <Home className="w-5 h-5" />
-              <span className="text-sm font-medium hidden md:inline">🏠 홈으로</span>
+              <span className="text-sm font-medium hidden md:inline">데모 홈</span>
               <span className="text-sm font-medium md:hidden">홈</span>
+            </Link>
+            <Link
+              href="/beta"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-safety-navy text-sm"
+              title="베타 메뉴"
+            >
+              <span className="font-medium">베타</span>
             </Link>
             <div>
               <h1 className="text-lg md:text-xl font-bold text-safety-navy">{pageTitle}</h1>

@@ -1,11 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import MobileView from "@/components/MobileView";
-import { CheckCircle2, Mic, Calendar, FileText, Smartphone, Target, AlertCircle } from "lucide-react";
+import { MapPin } from "lucide-react";
+import { CheckCircle2, Mic, Calendar, FileText, Smartphone, Target } from "lucide-react";
 import { getSafetyPolicy } from "@/lib/data-flow";
+
+const mockWorkers = [
+  { id: 1, name: "홍길동", team: "전기 1팀", location: { lat: 37.456, lng: 126.705 }, status: "작업중" },
+  { id: 2, name: "김철수", team: "전기 2팀", location: { lat: 37.457, lng: 126.706 }, status: "작업중" },
+  { id: 3, name: "이영희", team: "전기 3팀", location: { lat: 37.458, lng: 126.707 }, status: "휴식" },
+];
 
 export default function SiteManagerPage() {
   const [showMobile, setShowMobile] = useState(false);
@@ -15,24 +23,19 @@ export default function SiteManagerPage() {
     { id: 2, worker: "김철수", task: "조명 배선 작업", status: "pending" },
   ]);
 
-  // 방침 실시간 표시
   useEffect(() => {
     const policy = getSafetyPolicy();
     if (policy && policy.status === "approved") {
       setSafetyPolicy(policy);
     }
-    
-    // LocalStorage 변경 감지
     const handleStorageChange = () => {
       const updated = getSafetyPolicy();
       if (updated && updated.status === "approved") {
         setSafetyPolicy(updated);
       }
     };
-    
     window.addEventListener("storage", handleStorageChange);
-    const interval = setInterval(handleStorageChange, 1000); // 1초마다 체크
-    
+    const interval = setInterval(handleStorageChange, 1000);
     return () => {
       window.removeEventListener("storage", handleStorageChange);
       clearInterval(interval);
@@ -45,189 +48,223 @@ export default function SiteManagerPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-safety-navy mb-2">현장관리자</h1>
-        <p className="text-gray-600">작업지시 확정 및 현장 관리</p>
+    <div className="p-6">
+      <div className="mb-4">
+        <h1 className="text-xl font-bold text-safety-navy">현장관리자</h1>
+        <p className="text-sm text-gray-600">작업지시 확정 및 현장 관리</p>
       </div>
 
-      {/* 안전보건 방침 실시간 표시 */}
-      {safetyPolicy && (
-        <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-blue-300 border-2">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-blue-600" />
-              <CardTitle className="text-lg">안전보건 방침 및 목표 (본사 승인)</CardTitle>
-            </div>
-            <CardDescription className="text-xs text-blue-700">
-              본사에서 승인된 방침이 실시간으로 반영됩니다
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="font-semibold text-safety-navy">{safetyPolicy.title}</div>
-              <div className="text-sm text-gray-600">
-                승인자: {safetyPolicy.approvedBy} | 승인일: {safetyPolicy.approvedAt}
-              </div>
-              {safetyPolicy.gpsLocation && (
-                <div className="text-xs text-gray-500">
-                  GPS: {safetyPolicy.gpsLocation.lat.toFixed(4)}, {safetyPolicy.gpsLocation.lng.toFixed(4)}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* 왼쪽 40%: 현장 지도 */}
+        <div className="lg:col-span-2">
+          <Card className="h-full">
+            <CardHeader className="py-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                현장 지도
+              </CardTitle>
+              <CardDescription className="text-xs">근로자 실시간 위치</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="relative w-full h-64 lg:h-[420px] bg-gray-100 rounded-lg overflow-hidden border border-gray-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-green-100 to-blue-100">
+                  <div className="absolute top-10 left-10 w-24 h-24 bg-gray-400 rounded opacity-50" />
+                  <div className="absolute top-16 right-12 w-20 h-20 bg-gray-400 rounded opacity-50" />
+                  <div className="absolute bottom-16 left-1/3 w-20 h-20 bg-gray-400 rounded opacity-50" />
+                  {mockWorkers.map((w) => (
+                    <div
+                      key={w.id}
+                      className="absolute"
+                      style={{
+                        left: `${(w.location.lat - 37.454) * 10000}%`,
+                        top: `${(w.location.lng - 126.703) * 10000}%`,
+                      }}
+                    >
+                      <div className={`w-6 h-6 rounded-full border-2 border-white ${w.status === "작업중" ? "bg-green-500" : "bg-yellow-500"}`} />
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/80 text-white text-xs px-1.5 py-0.5 rounded">
+                        {w.name}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* 작업지시 확정 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>작업지시 목록</CardTitle>
-          <CardDescription>소장이 작업지시 확정을 누르면 각 근로자에게 전달됩니다</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {workOrders.map((order) => (
-              <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <div className="font-semibold">{order.worker}</div>
-                  <div className="text-sm text-gray-600">{order.task}</div>
+                <div className="absolute bottom-2 right-2 bg-white/90 p-2 rounded text-xs shadow">
+                  <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-green-500" /> 작업중</div>
+                  <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-yellow-500" /> 휴식</div>
                 </div>
-                {order.status === "pending" ? (
-                  <Button onClick={() => handleConfirm(order.id)} size="sm">
-                    확정
-                  </Button>
-                ) : (
-                  <div className="flex items-center gap-2 text-green-600">
-                    <CheckCircle2 className="w-5 h-5" />
-                    <span className="text-sm">확정 완료</span>
-                  </div>
-                )}
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* 의견청취 음성인식 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>의견청취관리대장</CardTitle>
-          <CardDescription>근로자 신고내역 - 음성은 자동 텍스트 변환 (Web Speech API 가상 처리)</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Button
-              onClick={() => setShowMobile(true)}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-            >
-              <Smartphone className="w-4 h-4 mr-2" />
-              근로자 앱에서 음성 신고하기
-            </Button>
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm">
-              <div className="font-semibold mb-2">음성 인식 처리 방식</div>
-              <div className="text-gray-700">
-                • 핸드폰 내부의 Web Speech API 사용<br />
-                • 음성이 텍스트로 변환되어 저장<br />
-                • 서버로는 텍스트만 전송 (가상 처리)
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        {/* 오른쪽 60%: 방침 + 작업지시/의견청취 + 점검일정 등 */}
+        <div className="lg:col-span-3 space-y-4">
+          {/* 안전보건 방침 및 목표 (본사 승인) */}
+          {safetyPolicy && (
+            <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-blue-200">
+              <CardHeader className="py-3">
+                <div className="flex items-center gap-2">
+                  <Target className="w-4 h-4 text-blue-600" />
+                  <CardTitle className="text-sm font-semibold">안전보건 방침 및 목표</CardTitle>
+                </div>
+                <CardDescription className="text-xs">본사 승인</CardDescription>
+              </CardHeader>
+              <CardContent className="py-2 pt-0">
+                <p className="text-sm font-medium text-safety-navy">{safetyPolicy.title}</p>
+                <p className="text-xs text-gray-600 mt-1">승인자: {safetyPolicy.approvedBy} | 승인일: {safetyPolicy.approvedAt}</p>
+              </CardContent>
+            </Card>
+          )}
 
-      {/* 점검 일정 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>점검 일정</CardTitle>
-          <CardDescription>본사 점검일정을 통합하여 캘린더에 표시</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="p-4 border rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Calendar className="w-5 h-5 text-blue-600" />
-                <div className="font-semibold">본사 안전점검</div>
-              </div>
-              <div className="text-sm text-gray-600 mb-3">2024-01-25 (목)</div>
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="bg-green-50">
-                  확인
+          {/* 현장방침 및 목표 (승인: 소장) */}
+          <Card className="border-amber-200 bg-amber-50/50">
+            <CardHeader className="py-3">
+              <CardTitle className="text-sm font-semibold">현장방침 및 목표</CardTitle>
+              <CardDescription className="text-xs">승인: 소장</CardDescription>
+            </CardHeader>
+            <CardContent className="py-2 pt-0">
+              <p className="text-sm text-gray-700">현장별 안전수칙 및 당해 연도 현장 목표. 소장 승인 후 현장에 공지합니다.</p>
+            </CardContent>
+          </Card>
+
+          {/* 작업지시 목록 + 의견청취관리대장 한 화면 (글씨 축소) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader className="py-2">
+                <CardTitle className="text-sm font-semibold">작업지시 목록</CardTitle>
+                <CardDescription className="text-xs">소장 확정 시 근로자 전달</CardDescription>
+              </CardHeader>
+              <CardContent className="py-2 pt-0">
+                <div className="space-y-2">
+                  {workOrders.map((order) => (
+                    <div key={order.id} className="flex items-center justify-between py-2 px-3 border rounded text-sm">
+                      <div>
+                        <span className="font-medium text-gray-900">{order.worker}</span>
+                        <span className="text-gray-500 ml-1">· {order.task}</span>
+                      </div>
+                      {order.status === "pending" ? (
+                        <Button onClick={() => handleConfirm(order.id)} size="sm" className="text-xs h-7">
+                          확정
+                        </Button>
+                      ) : (
+                        <span className="text-xs text-green-600 flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> 확정완료
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="py-2">
+                <CardTitle className="text-sm font-semibold">의견청취관리대장</CardTitle>
+                <CardDescription className="text-xs">근로자 신고·음성 텍스트 변환</CardDescription>
+              </CardHeader>
+              <CardContent className="py-2 pt-0">
+                <Button
+                  onClick={() => setShowMobile(true)}
+                  size="sm"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-xs"
+                >
+                  <Smartphone className="w-3.5 h-3.5 mr-1.5" />
+                  근로자 앱 음성 신고
                 </Button>
-                <Button size="sm" variant="outline" className="bg-red-50">
-                  불가
-                </Button>
-              </div>
-            </div>
+                <p className="text-xs text-gray-500 mt-2">Web Speech API 음성→텍스트 저장 (가상)</p>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* 문서함 서류등록 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>문서함 서류등록</CardTitle>
-          <CardDescription>CLOVA OCR 가상 처리 - 기초안전보건교육 이수증/자격증 스캔</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Button
-              onClick={() => setShowMobile(true)}
-              className="w-full bg-purple-600 hover:bg-purple-700"
-            >
-              <Smartphone className="w-4 h-4 mr-2" />
-              앱에서 문서 촬영하기
-            </Button>
-            <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg text-sm">
-              <div className="font-semibold mb-2">OCR 처리 (가상)</div>
-              <div className="text-gray-700">
-                • 기초안전보건교육 이수증: 이름/생년월일/이수번호 자동 입력<br />
-                • 자격증: 자격증 정보 자동 입력<br />
-                • 영수증: 날짜/금액 자동 입력<br />
-                <span className="text-xs text-gray-500">(실제 구현 시 CLOVA OCR API 연동)</span>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          {/* 점검일정: 캘린더 바로가기 */}
+          <Card>
+            <CardHeader className="py-2">
+              <CardTitle className="text-sm font-semibold">점검 일정</CardTitle>
+              <CardDescription className="text-xs">본사 점검일정 캘린더</CardDescription>
+            </CardHeader>
+            <CardContent className="py-2 pt-0">
+              <Link
+                href="/dashboard/inspection"
+                className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-medium text-blue-800 hover:bg-blue-100"
+              >
+                <Calendar className="w-4 h-4" />
+                캘린더 바로가기
+              </Link>
+            </CardContent>
+          </Card>
 
-      {/* 가상 핸드폰 화면 */}
-      <MobileView
-        isOpen={showMobile}
-        onClose={() => setShowMobile(false)}
-        title="의견청취 / 문서 촬영"
-      >
+          {/* 문서함 서류등록 */}
+          <Card>
+            <CardHeader className="py-2">
+              <CardTitle className="text-sm font-semibold">문서함 서류등록</CardTitle>
+              <CardDescription className="text-xs">서류 등록 및 본사 송부</CardDescription>
+            </CardHeader>
+            <CardContent className="py-2 pt-0 text-sm">
+              <ul className="space-y-2 text-gray-700">
+                <li>
+                  <span className="font-medium text-gray-900">기초안전교육이수증</span>
+                  <ul className="ml-4 mt-0.5 space-y-0.5 text-xs text-gray-600">
+                    <li>· OCR 작업</li>
+                  </ul>
+                </li>
+                <li>
+                  <span className="font-medium text-gray-900">TBM일지</span>
+                  <ul className="ml-4 mt-0.5 space-y-0.5 text-xs text-gray-600">
+                    <li>· 작성</li>
+                    <li>· 본사 송부</li>
+                  </ul>
+                </li>
+                <li>
+                  <span className="font-medium text-gray-900">산업안전보건관리비</span>
+                  <ul className="ml-4 mt-0.5 space-y-0.5 text-xs text-gray-600">
+                    <li>· 영수증 (OCR)</li>
+                    <li>· 내역 작성</li>
+                    <li>· 본사 송부</li>
+                  </ul>
+                </li>
+                <li>
+                  <span className="font-medium text-gray-900">교육</span>
+                  <ul className="ml-4 mt-0.5 space-y-0.5 text-xs text-gray-600">
+                    <li>· 작성</li>
+                    <li>· 본사 송부</li>
+                  </ul>
+                </li>
+                <li>
+                  <span className="font-medium text-gray-900">점검</span>
+                  <ul className="ml-4 mt-0.5 space-y-0.5 text-xs text-gray-600">
+                    <li>· 작성</li>
+                    <li>· 본사 송부</li>
+                  </ul>
+                </li>
+              </ul>
+              <div className="mt-3 pt-3 border-t border-gray-200" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <MobileView isOpen={showMobile} onClose={() => setShowMobile(false)} title="의견청취 / 문서 촬영">
         <div className="p-4 space-y-4">
           <div className="bg-blue-50 p-4 rounded-xl">
-            <div className="font-semibold mb-2">음성 신고</div>
-            <Button className="w-full bg-red-600 hover:bg-red-700 mb-2">
+            <div className="font-semibold text-sm mb-2">음성 신고</div>
+            <Button className="w-full bg-red-600 hover:bg-red-700 text-sm">
               <Mic className="w-4 h-4 mr-2" />
               음성 녹음 시작
             </Button>
-            <div className="text-xs text-gray-600">
-              Web Speech API로 음성이 텍스트로 변환됩니다 (가상 처리)
-            </div>
+            <p className="text-xs text-gray-600 mt-2">Web Speech API 가상 처리</p>
           </div>
-
           <div className="border-t pt-4">
-            <div className="font-semibold mb-2">문서 촬영</div>
-            <div className="space-y-2">
-              <Button className="w-full" variant="outline">
-                <FileText className="w-4 h-4 mr-2" />
-                이수증/자격증 촬영
-              </Button>
-              <Button className="w-full" variant="outline">
-                <FileText className="w-4 h-4 mr-2" />
-                영수증 촬영
-              </Button>
-            </div>
-            <div className="text-xs text-gray-600 mt-2">
-              CLOVA OCR로 자동 인식됩니다 (가상 처리)
-            </div>
+            <div className="font-semibold text-sm mb-2">문서 촬영</div>
+            <Button className="w-full" variant="outline" size="sm">
+              <FileText className="w-4 h-4 mr-2" />
+              이수증/자격증 촬영
+            </Button>
+            <Button className="w-full mt-2" variant="outline" size="sm">
+              <FileText className="w-4 h-4 mr-2" />
+              영수증 촬영
+            </Button>
           </div>
         </div>
       </MobileView>
     </div>
   );
 }
-

@@ -9,20 +9,29 @@ import {
 
 const BETA_COOKIE_NAME = "besma_beta";
 
-/** allowlist: 이 경로만 허용, 나머지는 리다이렉트(또는 404) */
-function isPathAllowed(path: string): boolean {
+/** 베타 쿠키가 있어야 접근 가능한 경로 (데모/관리용) */
+const BETA_GATED_PREFIXES = ["/dashboard", "/demo", "/architecture", "/admin", "/plan"];
+
+function isBetaGatedPath(path: string): boolean {
+  return BETA_GATED_PREFIXES.some((prefix) => path === prefix || path.startsWith(prefix + "/"));
+}
+
+/** allowlist: 이 경로만 허용, 나머지는 리다이렉트 */
+function isPathAllowed(path: string, hasBetaCookie: boolean): boolean {
   if (path === "/") return true;
   if (path.startsWith("/_next/") || path === "/favicon.ico" || path === "/robots.txt") return true;
   if (path.startsWith("/api/beta/unlock")) return true;
-  if (path.startsWith("/api/beta/license")) return true; // /beta 페이지에서 사용
+  if (path.startsWith("/api/beta/license")) return true;
   if (path.startsWith("/beta")) return true;
+  if (isBetaGatedPath(path)) return hasBetaCookie;
   return false;
 }
 
 export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
+  const hasBetaCookie = request.cookies.get(BETA_COOKIE_NAME)?.value === "1";
 
-  if (!isPathAllowed(path)) {
+  if (!isPathAllowed(path, hasBetaCookie)) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 

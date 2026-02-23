@@ -101,6 +101,16 @@ npm install
 
 이후 [http://localhost:3000](http://localhost:3000)에서 확인하고, **베타 전용 기능은 `/beta` 하위에서만** 사용할 수 있습니다.
 
+### 진입 경로 및 사용 흐름 (통일)
+
+- **공개**: `/` 랜딩만 접근 가능. `/admin`, `/demo`, `/plan`, `/dashboard` 등은 URL 직접 입력 시 `/`로 리다이렉트.
+- **베타 진입**: 홈에서 우하단 녹색 점을 **5회 연속 클릭** → 패스코드 입력(환경변수 `BETA_PASSCODE`) → 쿠키 설정 후 `/beta`로 이동.
+- **베타에서 사용 가능**:
+  - **작업일보·작업지시**(SAFETY_ONLY/BUNDLE): `/beta/safety` → 작업일보, `/beta/site/workorder`(현장관리자), `/beta/worker/workorder`(근로자).
+  - **데모 대시보드**: `/beta` 하단 **「데모 대시보드 (역할 선택)」** → `/demo/role-selection` → 본사/현장/근로자 선택 → `/dashboard` 계열 전체 사용.
+  - **참고**: 시스템 구성도(`/architecture`), 시스템 로직 맵(`/admin/logic-map`), 사이트맵(`/dashboard/sitemap`) 링크는 베타 쿠키가 있을 때만 동작.
+- **대시보드에서**: 상단 「데모 홈」→ 역할 선택, 「베타」→ `/beta` 복귀. 사이드바 하단 「베타 홈」→ `/beta`.
+
 **Managed Postgres(Neon, Supabase 등) 사용 시:**  
 `docker-compose`는 사용하지 않고, 해당 서비스에서 제공하는 **connection string**을 `.env.local`의 `DATABASE_URL`에 넣으면 됩니다. 마이그레이션·시드·앱 실행 방식은 동일합니다 (`db:migrate` → `db:seed` → `npm run dev`).
 
@@ -165,15 +175,21 @@ BESMA/
 └── public/                # 정적 파일
 ```
 
-## 주요 페이지
+## 주요 화면 위치 (베타 쿠키 후 접근)
 
-- `/` - 랜딩 페이지
-- `/plan` - 플랫폼 구축 계획
-- `/dashboard` - 본사 대시보드
-- `/dashboard/work-plan` - 작업계획서
-- `/dashboard/work-permit` - 작업허가서
-- `/dashboard/safety-documents` - 안전문서 취합
-- `/dashboard/worker-app` - 근로자 앱 시뮬레이션
+| 구분 | 경로 | 비고 |
+|------|------|------|
+| 랜딩 | `/` | 공개. 베타 진입은 우하단 5회 클릭 후 패스코드 |
+| 베타 홈 | `/beta` | 작업일보·작업지시, 데모/사이트맵/로직맵 링크 |
+| 데모 역할 선택 | `/demo/role-selection` | 본사/현장/근로자 선택 후 대시보드 |
+| 본사 대시보드 | `/dashboard` (role=headquarters) | 전사 지도·KPI, 본사 관리 메뉴 |
+| 본사 관리자 | `/dashboard/headquarters` | 남한 지도 30현장, 문서취합·반기보고 등 |
+| 현장관리자 | `/dashboard/site-manager` | 현장 지도, 방침, 작업지시·의견청취·점검일정 |
+| 근로자 앱 | `/dashboard/worker-app` | 작업중지권·위험신고·작업지시 확인 등 |
+| 안전문서 취합 | `/dashboard/safety-documents` | 현장별 문서 제출 현황 |
+| 사이트맵 | `/dashboard/sitemap` | 전체 메뉴 트리 |
+| 시스템 로직 맵 | `/admin/logic-map` | 본사/현장/근로자 플로우·화면 링크 |
+| 플랫폼 구축 계획 | `/plan` | 계획 문서 |
 
 ## 배포
 
