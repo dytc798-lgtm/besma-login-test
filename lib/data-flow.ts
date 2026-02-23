@@ -75,6 +75,24 @@ export interface WorkerPoints {
   lastUpdated: string;
 }
 
+// 안전 신문고(작업중지권·위험요인 신고) 공용 저장 — 시연 시 유기적 연동
+export type SafetyReportItem = {
+  id: number | string;
+  type: "위험요인신고" | "작업중지권";
+  reporter: string;
+  reporterTeam: string;
+  datetime: string;
+  location: string;
+  riskFactor: string;
+  countermeasure: string;
+  status: "접수" | "조치중" | "조치완료";
+  manager: string | null;
+  response: string | null;
+  appropriatenessScore: number | null;
+  noveltyScore: number | null;
+  totalScore: number | null;
+};
+
 // LocalStorage 키
 const STORAGE_KEYS = {
   SAFETY_POLICY: "besma_safety_policy",
@@ -82,6 +100,7 @@ const STORAGE_KEYS = {
   SIGNATURES: "besma_signatures",
   WORKER_POINTS: "besma_worker_points",
   RISK_ASSESSMENT_DB: "besma_risk_assessment_db",
+  SAFETY_REPORTS: "besma_safety_reports",
 };
 
 // 안전보건 방침 저장 및 조회
@@ -102,6 +121,46 @@ export function getSafetyPolicy(): SafetyPolicy | null {
   if (typeof window === "undefined") return null;
   const data = localStorage.getItem(STORAGE_KEYS.SAFETY_POLICY);
   return data ? JSON.parse(data) : null;
+}
+
+export function getSafetyReports(): SafetyReportItem[] {
+  if (typeof window === "undefined") return [];
+  const data = localStorage.getItem(STORAGE_KEYS.SAFETY_REPORTS);
+  return data ? JSON.parse(data) : [];
+}
+
+export function addSafetyReport(
+  item: Omit<SafetyReportItem, "id" | "manager" | "response" | "appropriatenessScore" | "noveltyScore" | "totalScore">
+): SafetyReportItem {
+  if (typeof window === "undefined") {
+    return { ...item, id: "ssr", status: "접수", manager: null, response: null, appropriatenessScore: null, noveltyScore: null, totalScore: null };
+  }
+  const list = getSafetyReports();
+  const id = `live-${Date.now()}`;
+  const newItem: SafetyReportItem = {
+    ...item,
+    id,
+    status: "접수",
+    manager: null,
+    response: null,
+    appropriatenessScore: null,
+    noveltyScore: null,
+    totalScore: null,
+  };
+  list.unshift(newItem);
+  localStorage.setItem(STORAGE_KEYS.SAFETY_REPORTS, JSON.stringify(list));
+  window.dispatchEvent(new StorageEvent("storage", { key: STORAGE_KEYS.SAFETY_REPORTS, newValue: JSON.stringify(list) }));
+  return newItem;
+}
+
+export function updateSafetyReport(id: number | string, update: Partial<Pick<SafetyReportItem, "status" | "manager" | "response" | "appropriatenessScore" | "noveltyScore" | "totalScore">>) {
+  if (typeof window === "undefined") return;
+  const list = getSafetyReports();
+  const idx = list.findIndex((r) => String(r.id) === String(id));
+  if (idx === -1) return;
+  list[idx] = { ...list[idx], ...update };
+  localStorage.setItem(STORAGE_KEYS.SAFETY_REPORTS, JSON.stringify(list));
+  window.dispatchEvent(new StorageEvent("storage", { key: STORAGE_KEYS.SAFETY_REPORTS, newValue: JSON.stringify(list) }));
 }
 
 // TBM 데이터 저장 (위험성평가 DB 연동)

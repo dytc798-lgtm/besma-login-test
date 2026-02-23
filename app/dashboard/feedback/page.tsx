@@ -1,19 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { mockSafetyReports } from "@/lib/mock-data";
-import { Search, AlertCircle, User, Calendar, CheckCircle2, Clock, Ban, Shield, Star } from "lucide-react";
+import { getSafetyReports, updateSafetyReport, type SafetyReportItem } from "@/lib/data-flow";
+import { Search, AlertCircle, CheckCircle2, Clock, Ban, Shield, Star } from "lucide-react";
+
+// mock + 저장소 병합 (시연 시 근로자앱에서 넣은 작업중지권·위험신고가 여기 반영)
+function loadMergedReports(): SafetyReportItem[] {
+  if (typeof window === "undefined") return [...mockSafetyReports];
+  const live = getSafetyReports();
+  const merged = [...live, ...mockSafetyReports];
+  return merged.sort((a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime());
+}
 
 export default function FeedbackPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [reports, setReports] = useState(mockSafetyReports);
-  const [editingScore, setEditingScore] = useState<number | null>(null);
-  const [scoreValues, setScoreValues] = useState<{ [key: number]: { appropriateness: number; novelty: number } }>({});
+  const [reports, setReports] = useState<SafetyReportItem[]>(loadMergedReports);
+  const [editingScore, setEditingScore] = useState<number | string | null>(null);
+  const [scoreValues, setScoreValues] = useState<Record<string, { appropriateness: number; novelty: number }>>({});
+
+  const refreshReports = useCallback(() => setReports(loadMergedReports()), []);
+  useEffect(() => {
+    refreshReports();
+    const handler = () => refreshReports();
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
+  }, [refreshReports]);
 
   // 시간 순서대로 정렬 (최신순)
-  const sortedReports = [...reports].sort((a, b) => 
+  const sortedReports = [...reports].sort((a, b) =>
     new Date(b.datetime).getTime() - new Date(a.datetime).getTime()
   );
 
@@ -25,23 +42,28 @@ export default function FeedbackPage() {
       report.type.includes(searchTerm)
   );
 
-  const handleScoreSubmit = (reportId: number) => {
-    const scores = scoreValues[reportId];
+  const handleScoreSubmit = (reportId: number | string) => {
+    const key = String(reportId);
+    const scores = scoreValues[key];
     if (!scores) return;
 
     const totalScore = scores.appropriateness + scores.novelty;
-    setReports(
-      reports.map((report) =>
-        report.id === reportId
-          ? {
-              ...report,
-              appropriatenessScore: scores.appropriateness,
-              noveltyScore: scores.novelty,
-              totalScore: totalScore,
-            }
-          : report
-      )
-    );
+    if (String(reportId).startsWith("live-")) {
+      updateSafetyReport(reportId, {
+        appropriatenessScore: scores.appropriateness,
+        noveltyScore: scores.novelty,
+        totalScore,
+      });
+      refreshReports();
+    } else {
+      setReports(
+        reports.map((report) =>
+          report.id === reportId
+            ? { ...report, appropriatenessScore: scores.appropriateness, noveltyScore: scores.novelty, totalScore }
+            : report
+        )
+      );
+    }
     setEditingScore(null);
     alert("점수가 저장되었습니다. 포상 평가에 반영됩니다.");
   };

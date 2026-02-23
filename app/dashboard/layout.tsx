@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { getMenuItemsByRole, type UserRole } from "@/lib/role-menu-config";
 import { Button } from "@/components/ui/button";
 import {
@@ -86,8 +86,24 @@ function DashboardContent({
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [fromLogicMap, setFromLogicMap] = useState(false);
+  
+  // 역할이 있을 때 /dashboard 진입 시 해당 역할 대시보드로 일원화 리다이렉트
+  const role = searchParams.get("role") as UserRole | null;
+  useEffect(() => {
+    if (pathname !== "/dashboard" || !role) return;
+    const target =
+      role === "headquarters"
+        ? "/dashboard/headquarters?role=headquarters"
+        : role === "site-manager"
+        ? "/dashboard/site-manager?role=site-manager"
+        : role === "worker"
+        ? "/dashboard/worker-app?role=worker"
+        : null;
+    if (target) router.replace(target);
+  }, [pathname, role, router]);
   
   // LocalStorage에서 로직 맵 플래그 확인
   useEffect(() => {
@@ -97,15 +113,13 @@ function DashboardContent({
     }
   }, [pathname]);
   
-  // URL 쿼리 파라미터에서 역할 가져오기
-  const role = searchParams.get("role") as UserRole | null;
-  
   // 역할에 따른 메뉴 가져오기
   const roleMenuItems = getMenuItemsByRole(role);
   const menuItems = role ? roleMenuItems : defaultMenuItems;
   
-  const activeMenu = menuItems.find((item) => item.path === pathname)?.id || "dashboard";
-  const currentPage = menuItems.find((item) => item.path === pathname);
+  const pathBase = pathname.split("?")[0];
+  const activeMenu = menuItems.find((item) => item.path.split("?")[0] === pathBase)?.id || "dashboard";
+  const currentPage = menuItems.find((item) => item.path.split("?")[0] === pathBase);
   const pageTitle = currentPage?.title || "대시보드";
   const pageDescription = currentPage?.id === "dashboard" 
     ? "전사 안전보건 현황 및 주요 알림을 한눈에 확인합니다."

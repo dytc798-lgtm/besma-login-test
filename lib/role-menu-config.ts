@@ -36,13 +36,13 @@ export interface MenuItem {
   title: string;
 }
 
-// 본사 관리자 / 경영책임자 메뉴
+// 본사 관리자 / 경영책임자 메뉴 (site-manager와 동일 패턴: 역할별 대시보드 경로, role 쿼리 통일)
 export const headquartersMenuItems: MenuItem[] = [
   {
     id: "dashboard",
     label: "전사 통합 대시보드",
     icon: LayoutDashboard,
-    path: "/dashboard?role=headquarters",
+    path: "/dashboard/headquarters?role=headquarters",
     title: "전사 통합 대시보드",
   },
   {
@@ -135,34 +135,41 @@ export const siteManagerMenuItems: MenuItem[] = [
   },
 ];
 
-// 기능인 / 근로자 메뉴
+// 기능인 / 근로자 메뉴 (site-manager와 동일 패턴: 대시보드 첫 항목, role 쿼리 통일)
 export const workerMenuItems: MenuItem[] = [
+  {
+    id: "worker-dashboard",
+    label: "근로자 대시보드",
+    icon: LayoutDashboard,
+    path: "/dashboard/worker-app?role=worker",
+    title: "근로자 대시보드",
+  },
   {
     id: "safety-center",
     label: "안전 센터",
     icon: Shield,
-    path: "/dashboard/worker-app/safety-center",
+    path: "/dashboard/worker-app/safety-center?role=worker",
     title: "안전 센터",
   },
   {
     id: "today-tasks",
     label: "오늘의 할 일",
     icon: ClipboardList,
-    path: "/dashboard/worker-app/today-tasks",
+    path: "/dashboard/worker-app/today-tasks?role=worker",
     title: "오늘의 할 일",
   },
   {
     id: "mypage",
     label: "마이페이지",
     icon: Smartphone,
-    path: "/dashboard/worker-app/mypage",
+    path: "/dashboard/worker-app/mypage?role=worker",
     title: "마이페이지",
   },
   {
     id: "communication",
     label: "소통 창구",
     icon: Languages,
-    path: "/dashboard/worker-app/communication",
+    path: "/dashboard/worker-app/communication?role=worker",
     title: "소통 창구",
   },
 ];

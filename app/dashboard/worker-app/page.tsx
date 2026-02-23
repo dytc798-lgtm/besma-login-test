@@ -6,10 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import MobileView from "@/components/MobileView";
 import SignaturePad from "@/components/SignaturePad";
-import { Smartphone, Award, FileText, CheckCircle2, AlertTriangle, Ban, Shield, Target } from "lucide-react";
-import { getSafetyPolicy } from "@/lib/data-flow";
+import { Smartphone, Award, FileText, CheckCircle2, AlertTriangle, Ban, Shield, Target, MapPin } from "lucide-react";
+import { getSafetyPolicy, addSafetyReport } from "@/lib/data-flow";
 
 export default function WorkerAppPage() {
+  const [phoneOpen, setPhoneOpen] = useState(true);
   const [safetyPolicy, setSafetyPolicy] = useState<any>(null);
   const [mobileView, setMobileView] = useState<"main" | "points" | "work" | "work-complete" | "stop-work" | "report-risk">("main");
 
@@ -55,9 +56,17 @@ export default function WorkerAppPage() {
       alert("모든 항목을 입력해주세요.");
       return;
     }
+    addSafetyReport({
+      type: "작업중지권",
+      reporter: "박성구",
+      reporterTeam: "전기 1팀",
+      datetime: new Date().toLocaleString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+      location: stopWorkData.location,
+      riskFactor: stopWorkData.riskFactor,
+      countermeasure: stopWorkData.countermeasure,
+    });
     setStopWorkNotificationSent(true);
     setStopWorkData({ location: "", riskFactor: "", countermeasure: "" });
-    // 실제로는 안전신문고/관리자 알림 API 호출
   };
 
   const handleReportRiskSubmit = () => {
@@ -65,9 +74,17 @@ export default function WorkerAppPage() {
       alert("위치와 위험요인을 입력해주세요.");
       return;
     }
-    alert("위험요인이 신고되었습니다. 안전신문고에 등록되었습니다.");
+    addSafetyReport({
+      type: "위험요인신고",
+      reporter: "박성구",
+      reporterTeam: "전기 1팀",
+      datetime: new Date().toLocaleString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+      location: reportRiskData.location,
+      riskFactor: reportRiskData.riskFactor,
+      countermeasure: reportRiskData.countermeasure || "",
+    });
+    alert("위험요인이 신고되었습니다. 안전 신문고에 등록되었습니다.");
     setReportRiskData({ location: "", riskFactor: "", countermeasure: "" });
-    // 실제로는 안전신문고 데이터에 추가
   };
 
   const handleSignatureConfirm = (signature: string) => {
@@ -105,40 +122,69 @@ export default function WorkerAppPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-safety-navy mb-2">근로자 앱</h1>
-        <p className="text-gray-600">가상 핸드폰 화면으로 근로자 앱을 시연합니다</p>
+    <div className="p-6">
+      <div className="mb-4">
+        <h1 className="text-xl font-bold text-safety-navy">근로자 앱</h1>
+        <p className="text-sm text-gray-600">현장 · 내 정보 및 앱 시연</p>
       </div>
 
-      {/* 안전보건 방침 실시간 표시 */}
-      {safetyPolicy && (
-        <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-blue-300 border-2">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-blue-600" />
-              <CardTitle className="text-lg">안전보건 방침 및 목표 (본사 승인)</CardTitle>
-            </div>
-            <CardDescription className="text-xs text-blue-700">
-              본사에서 승인된 방침이 실시간으로 반영됩니다
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="font-semibold text-safety-navy">{safetyPolicy.title}</div>
-              <div className="text-sm text-gray-600">
-                승인자: {safetyPolicy.approvedBy} | 승인일: {safetyPolicy.approvedAt}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* 왼쪽 40%: 현장 요약 · 내 위치 (site-manager와 동일 패턴) */}
+        <div className="lg:col-span-2">
+          <Card className="h-full">
+            <CardHeader className="py-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                현장 · 내 정보
+              </CardTitle>
+              <CardDescription className="text-xs">인천1구역</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-3 text-sm">
+                <div className="p-3 rounded-lg bg-blue-50 border border-blue-100">
+                  <div className="font-semibold text-safety-navy">박성구</div>
+                  <div className="text-gray-600">전기 1팀</div>
+                </div>
+                <div className="p-3 rounded-lg bg-amber-50 border border-amber-100">
+                  <div className="text-xs text-amber-800 font-medium">부현포인트</div>
+                  <div className="text-xl font-bold text-amber-600">850P</div>
+                </div>
+                <p className="text-xs text-gray-500">앱에서 작업중지권·위험신고·작업지시 확인을 할 수 있습니다.</p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* 가상 핸드폰 화면 표시 */}
+        {/* 오른쪽 60%: 방침 + 가상 핸드폰 */}
+        <div className="lg:col-span-3 space-y-4">
+          {safetyPolicy && (
+            <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-blue-200">
+              <CardHeader className="py-2">
+                <div className="flex items-center gap-2">
+                  <Target className="w-4 h-4 text-blue-600" />
+                  <CardTitle className="text-sm font-semibold">안전보건 방침 (본사 승인)</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="py-2 pt-0">
+                <p className="text-sm text-safety-navy">{safetyPolicy.title}</p>
+              </CardContent>
+            </Card>
+          )}
+
+      {/* 가상 핸드폰: X 누르면 메인일 때는 폰 닫기, 그 외에는 이전 화면(메인)으로 */}
       <div className="flex justify-center">
+        {!phoneOpen ? (
+          <Card className="p-8 text-center max-w-sm">
+            <p className="text-gray-600 mb-4">근로자 앱 시연</p>
+            <Button onClick={() => setPhoneOpen(true)} className="bg-safety-navy hover:bg-safety-navy-light">
+              <Smartphone className="w-4 h-4 mr-2" />
+              앱 열기
+            </Button>
+          </Card>
+        ) : (
         <MobileView
           isOpen={true}
-          onClose={() => setMobileView("main")}
+          onClose={() => { if (mobileView !== "main") setMobileView("main"); else setPhoneOpen(false); }}
           title={
             mobileView === "main" ? "BESMA 근로자" : 
             mobileView === "points" ? "부현포인트" : 
@@ -519,6 +565,9 @@ export default function WorkerAppPage() {
           </div>
         )}
         </MobileView>
+        )}
+      </div>
+        </div>
       </div>
 
       {/* 위험성평가 서명 패드 */}

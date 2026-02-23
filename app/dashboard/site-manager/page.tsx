@@ -6,8 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import MobileView from "@/components/MobileView";
 import { MapPin } from "lucide-react";
-import { CheckCircle2, Mic, Calendar, FileText, Smartphone, Target } from "lucide-react";
-import { getSafetyPolicy } from "@/lib/data-flow";
+import { CheckCircle2, Mic, Calendar, FileText, Smartphone, Target, Ban, Shield, AlertCircle } from "lucide-react";
+import { getSafetyPolicy, getSafetyReports } from "@/lib/data-flow";
+
+type WorkOrderItem = { id: number; worker: string; task: string; hazard: string; measure: string; status: "pending" | "confirmed" };
 
 const mockWorkers = [
   { id: 1, name: "홍길동", team: "전기 1팀", location: { lat: 37.456, lng: 126.705 }, status: "작업중" },
@@ -18,9 +20,10 @@ const mockWorkers = [
 export default function SiteManagerPage() {
   const [showMobile, setShowMobile] = useState(false);
   const [safetyPolicy, setSafetyPolicy] = useState<any>(null);
-  const [workOrders, setWorkOrders] = useState([
-    { id: 1, worker: "박성구", task: "동력간선 케이블 포설", status: "pending" },
-    { id: 2, worker: "김철수", task: "조명 배선 작업", status: "pending" },
+  const [recentSafetyReports, setRecentSafetyReports] = useState<ReturnType<typeof getSafetyReports>>([]);
+  const [workOrders, setWorkOrders] = useState<WorkOrderItem[]>([
+    { id: 1, worker: "박성구", task: "동력간선 케이블 포설", hazard: "감전, 낙하", measure: "절연장갑, 안전모", status: "pending" },
+    { id: 2, worker: "김철수", task: "조명 배선 작업", hazard: "감전", measure: "차단 확인 후 작업", status: "pending" },
   ]);
 
   useEffect(() => {
@@ -33,7 +36,9 @@ export default function SiteManagerPage() {
       if (updated && updated.status === "approved") {
         setSafetyPolicy(updated);
       }
+      setRecentSafetyReports(getSafetyReports());
     };
+    setRecentSafetyReports(getSafetyReports());
     window.addEventListener("storage", handleStorageChange);
     const interval = setInterval(handleStorageChange, 1000);
     return () => {
@@ -136,20 +141,25 @@ export default function SiteManagerPage() {
               <CardContent className="py-2 pt-0">
                 <div className="space-y-2">
                   {workOrders.map((order) => (
-                    <div key={order.id} className="flex items-center justify-between py-2 px-3 border rounded text-sm">
-                      <div>
-                        <span className="font-medium text-gray-900">{order.worker}</span>
-                        <span className="text-gray-500 ml-1">· {order.task}</span>
+                    <div key={order.id} className="py-2 px-3 border rounded text-sm space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="font-medium text-gray-900">{order.worker}</span>
+                          <span className="text-gray-500 ml-1">· {order.task}</span>
+                        </div>
+                        {order.status === "pending" ? (
+                          <Button onClick={() => handleConfirm(order.id)} size="sm" className="text-xs h-7">
+                            확정
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-green-600 flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5" /> 확정완료
+                          </span>
+                        )}
                       </div>
-                      {order.status === "pending" ? (
-                        <Button onClick={() => handleConfirm(order.id)} size="sm" className="text-xs h-7">
-                          확정
-                        </Button>
-                      ) : (
-                        <span className="text-xs text-green-600 flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> 확정완료
-                        </span>
-                      )}
+                      <div className="text-xs text-gray-600 pl-0">
+                        <span className="text-red-600">위험요인:</span> {order.hazard || "—"} · <span className="text-green-700">대책:</span> {order.measure || "—"}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -174,6 +184,46 @@ export default function SiteManagerPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* 최근 작업중지권/위험신고 (근로자앱에서 입력 시 여기 반영) */}
+          <Card className="border-red-100">
+            <CardHeader className="py-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
+                    <AlertCircle className="w-4 h-4 text-red-600" />
+                    최근 작업중지권 / 위험신고
+                  </CardTitle>
+                  <CardDescription className="text-xs">근로자 앱에서 신고 시 실시간 반영</CardDescription>
+                </div>
+                <Link href="/dashboard/feedback?role=site-manager" className="text-xs text-safety-navy font-medium hover:underline">
+                  전체 보기 →
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="py-2 pt-0">
+              {recentSafetyReports.length === 0 ? (
+                <p className="text-xs text-gray-500 py-2">아직 신고 내역이 없습니다. 근로자 앱에서 작업중지권 또는 위험요인 신고를 하면 여기에 표시됩니다.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {recentSafetyReports.slice(0, 5).map((r) => (
+                    <li key={r.id} className="flex items-start gap-2 py-1.5 px-2 rounded border border-gray-100 text-xs">
+                      {r.type === "작업중지권" ? (
+                        <Ban className="w-3.5 h-3.5 text-red-600 flex-shrink-0 mt-0.5" />
+                      ) : (
+                        <Shield className="w-3.5 h-3.5 text-orange-600 flex-shrink-0 mt-0.5" />
+                      )}
+                      <div className="min-w-0">
+                        <span className="font-medium text-gray-900">{r.reporter}</span>
+                        <span className="text-gray-500 ml-1">· {r.datetime}</span>
+                        <div className="text-gray-600 mt-0.5 truncate">{r.location} · {r.riskFactor}</div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
 
           {/* 점검일정: 캘린더 바로가기 */}
           <Card>
